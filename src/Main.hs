@@ -23,6 +23,8 @@ import           Data.Monoid
 import           Data.Text                  (Text)
 import           Data.Time
 import           Data.Time.Clock.POSIX
+import           Network.HTTP.Client        (Manager)
+import           Network.HTTP.Client.TLS    (newTlsManager)
 import           Network.Wreq
 import           System.Environment
 import           Text.Printf
@@ -39,6 +41,8 @@ live = "https://api.gdax.com"
 sandbox :: Endpoint
 sandbox = "https://api-public.sandbox.gdax.com"
 
+class HasManager a where
+    manager :: Lens' a Manager
 class HasEndpoint a where
     endpoint :: Lens' a Endpoint
 class HasAccessKey a where
@@ -50,31 +54,40 @@ class HasPassphrase a where
 
 data Gdax
     = Gdax
-        { _gdaxEndpoint   :: Endpoint
+        { _gdaxManager    :: Manager
+        , _gdaxEndpoint   :: Endpoint
         , _gdaxAccessKey  :: AccessKey
         , _gdaxSecretKey  :: SecretKey
         , _gdaxPassphrase :: Passphrase
         }
-    deriving (Show)
 
 $(makeClassy ''Gdax)
 
+instance HasManager Gdax where manager = gdaxManager
 instance HasEndpoint Gdax where endpoint = gdaxEndpoint
 instance HasAccessKey Gdax where accessKey = gdaxAccessKey
 instance HasSecretKey Gdax where secretKey = gdaxSecretKey
 instance HasPassphrase Gdax where passphrase = gdaxPassphrase
 
-mkLiveGdax :: AccessKey -> SecretKey -> Passphrase -> Gdax
-mkLiveGdax = Gdax live
+mkLiveGdax :: (MonadIO m) => AccessKey -> SecretKey -> Passphrase -> m Gdax
+mkLiveGdax a s p = do
+    m <- newTlsManager
+    return $ Gdax m live a s p
 
-mkSandboxGdax :: AccessKey -> SecretKey -> Passphrase -> Gdax
-mkSandboxGdax = Gdax sandbox
+mkSandboxGdax :: (MonadIO m) => AccessKey -> SecretKey -> Passphrase -> m Gdax
+mkSandboxGdax a s p = do
+    m <- newTlsManager
+    return $ Gdax m sandbox a s p
 
-mkLiveUnsignedGdax :: Gdax
-mkLiveUnsignedGdax = Gdax live "" "" ""
+mkLiveUnsignedGdax :: (MonadIO m) => m Gdax
+mkLiveUnsignedGdax = do
+    m <- newTlsManager
+    return $ Gdax m live "" "" ""
 
-mkSandboxUnsignedGdax :: Gdax
-mkSandboxUnsignedGdax = Gdax sandbox "" "" ""
+mkSandboxUnsignedGdax :: (MonadIO m) => m Gdax
+mkSandboxUnsignedGdax = do
+    m <- newTlsManager
+    return $ Gdax m sandbox "" "" ""
 
 main :: IO ()
 main = do
@@ -82,7 +95,7 @@ main = do
     secretKey <- liftIO $ Base64.decodeLenient . CBS.pack <$> getEnv "GDAX_SECRET"
     passphrase <- liftIO $ CBS.pack <$> getEnv "GDAX_PASSPHRASE"
 
-    let gdax = mkSandboxGdax accessKey secretKey passphrase
+    gdax <- mkSandboxGdax accessKey secretKey passphrase
 
     putStrLn "getTime:"
     time <- getTime gdax
