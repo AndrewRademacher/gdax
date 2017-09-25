@@ -25,6 +25,13 @@ executable gdax
                       , aeson-casing
                       , conduit
                       , conduit-extra
+                      , exceptions
                       , http-client
                       , http-client-tls
                       , http-conduit
+                      , lens
+                      , lens-aeson
+                      , mtl
+                      , time
+                      , text
+                      , wreq
