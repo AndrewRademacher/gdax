@@ -1,13 +1,16 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TemplateHaskell       #-}
 
 module Main where
 
 import           Control.Lens               hiding ((.=))
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
+import           Control.Monad.Reader
 import           Crypto.Hash
-import           Data.Aeson                 (Value, object, (.=))
+import           Data.Aeson                 (FromJSON (..), ToJSON (..), Value,
+                                             object, (.=))
 import qualified Data.Aeson                 as Aeson
 import           Data.Aeson.Encode.Pretty
 import           Data.Aeson.Lens
@@ -67,90 +70,109 @@ mkLiveGDAX = GDAX live
 mkSandboxGDAX :: AccessKey -> SecretKey -> Passphrase -> GDAX
 mkSandboxGDAX = GDAX sandbox
 
+mkLiveUnsignedGDAX :: GDAX
+mkLiveUnsignedGDAX = GDAX live "" "" ""
+
+mkSandboxUnsignedGDAX :: GDAX
+mkSandboxUnsignedGDAX = GDAX sandbox "" "" ""
+
 main :: IO ()
 main = do
-    -- putStrLn "getTime:"
-    -- time <- getTime
-    -- print time
-
-    putStrLn "listAccounts:"
-    accounts <- listAccounts
-    CLBS.putStrLn $ encodePretty accounts
-
-    putStrLn "placeOrder:"
-    ores <- placeOrder
-    CLBS.putStrLn $ encodePretty ores
-
--- placeOrder - Example of making authenticated request with body against GDAX.
-
-placeOrder :: (MonadIO m, MonadThrow m) => m Value
-placeOrder = do
-    -- Sig stuff
     accessKey <- liftIO $ CBS.pack <$> getEnv "GDAX_KEY"
     secretKey <- liftIO $ Base64.decodeLenient . CBS.pack <$> getEnv "GDAX_SECRET"
     passphrase <- liftIO $ CBS.pack <$> getEnv "GDAX_PASSPHRASE"
-    time <- liftIO getCurrentTime
 
-    -- Body stuff
-    let body = object
+    let gdax = mkSandboxGDAX accessKey secretKey passphrase
+
+    putStrLn "getTime:"
+    time <- getTime gdax
+    print time
+
+    putStrLn "listAccounts:"
+    accounts <- listAccounts gdax
+    CLBS.putStrLn $ encodePretty accounts
+
+    putStrLn "placeOrder:"
+    ores <- placeOrder gdax
+    CLBS.putStrLn $ encodePretty ores
+
+-- BEGIN: General Functions
+
+type Path = String
+type Method = ByteString
+
+gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => GDAX -> Path -> m b
+gdaxGet gdax path = do
+    res <- liftIO $ get (gdax ^. endpoint <> path)
+    case Aeson.decode (res ^. responseBody) of
+        Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
+        Just val -> return val
+
+gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => GDAX -> Path -> m b
+gdaxSignedGet gdax path = do
+    signedOpts <- signOptions gdax "GET" path Nothing defaults
+    res <- liftIO $ getWith signedOpts (gdax ^. endpoint <> path)
+    case Aeson.decode (res ^. responseBody) of
+        Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
+        Just val -> return val
+
+gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => GDAX -> Path -> a -> m b
+gdaxSignedPost gdax path body = do
+    signedOpts <- signOptions gdax "POST" path (Just bodyBS) opts
+    res <- liftIO $ postWith signedOpts (gdax ^. endpoint <> path) bodyBS
+    case Aeson.decode (res ^. responseBody) of
+        Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
+        Just val -> return val
+    where
+        opts = defaults & header "Content-Type" .~ [ "application/json" ]
+        bodyBS = CLBS.toStrict $ Aeson.encode body
+
+-- | No export
+signOptions :: (MonadIO m) => GDAX -> Method -> Path -> (Maybe ByteString) -> Options -> m Options
+signOptions gdax method path mBody opts = do
+    time <- liftIO $ getCurrentTime
+    let timestamp = CBS.pack $ printf "%.0f" (realToFrac (utcTimeToPOSIXSeconds time) :: Double)
+        sigString = timestamp <> method <> (CBS.pack path) <> maybe "" id mBody
+        sig = Base64.encode $ toBytes (hmac (gdax ^. secretKey) sigString :: HMAC SHA256)
+
+    return $ opts
+        & header "CB-ACCESS-KEY" .~ [ (gdax ^. accessKey) ]
+        & header "CB-ACCESS-SIGN" .~ [ sig ]
+        & header "CB-ACCESS-TIMESTAMP" .~ [ timestamp ]
+        & header "CB-ACCESS-PASSPHRASE" .~ [ (gdax ^. passphrase) ]
+
+-- END: General Functions
+
+-- placeOrder - Example of making authenticated request with body against GDAX.
+
+placeOrder :: (MonadIO m, MonadThrow m) => GDAX -> m Value
+placeOrder gdax = gdaxSignedPost gdax "/orders" body
+    where
+        body = object
             [ "size" .= ("0.01" :: Text)
             , "price" .= ("0.100" :: Text)
             , "side" .= ("buy" :: Text)
             , "product_id" .= ("BTC-USD" :: Text)
             ]
-        bodyBS = CLBS.toStrict $ Aeson.encode body
 
-    liftIO $ print $ bodyBS
 
-    -- Sig stuff
-    let timestamp = CBS.pack $ printf "%.0f" (realToFrac (utcTimeToPOSIXSeconds time) :: Double)
-        sigString :: ByteString
-        sigString = timestamp <> "POST" <> "/orders" <> bodyBS
-        sig = Base64.encode $ toBytes (hmac secretKey sigString :: HMAC SHA256)
-        opts = defaults
-            & header "CB-ACCESS-KEY" .~ [ accessKey ]
-            & header "CB-ACCESS-SIGN" .~ [ sig ]
-            & header "CB-ACCESS-TIMESTAMP" .~ [ timestamp ]
-            & header "CB-ACCESS-PASSPHRASE" .~ [ passphrase ]
-            & header "Content-Type" .~ [ "application/json" ]
-
-    -- res <- liftIO $ postWith opts "https://api.gdax.com/orders" bodyBS
-    res <- liftIO $ postWith opts "https://api-public.sandbox.gdax.com/orders" bodyBS
-    case res ^? responseBody . _Value of
-        Nothing -> throwM $ MalformedGDAXResponse "Order post response body was invalid."
-        Just val -> return val
 
 -- listAccounts - Example of making an authenticated request against GDAX.
 
-listAccounts :: (MonadIO m, MonadThrow m) => m Value
-listAccounts = do
-    accessKey <- liftIO $ CBS.pack <$> getEnv "GDAX_KEY"
-    secretKey <- liftIO $ Base64.decodeLenient . CBS.pack <$> getEnv "GDAX_SECRET"
-    passphrase <- liftIO $ CBS.pack <$> getEnv "GDAX_PASSPHRASE"
-    time <- liftIO getCurrentTime
-
-    let timestamp = CBS.pack $ printf "%.0f" (realToFrac (utcTimeToPOSIXSeconds time) :: Double)
-        sigString = timestamp <> "GET" <> "/accounts"
-        sig = Base64.encode $ toBytes (hmac secretKey sigString :: HMAC SHA256)
-        opts = defaults
-                & header "CB-ACCESS-KEY" .~ [ accessKey ]
-                & header "CB-ACCESS-SIGN" .~ [ sig ]
-                & header "CB-ACCESS-TIMESTAMP" .~ [ timestamp ]
-                & header "CB-ACCESS-PASSPHRASE" .~ [ passphrase ]
-
-    res <- liftIO $ getWith opts "https://api.gdax.com/accounts"
-    case res ^? responseBody . _Value of
-        Nothing -> throwM $ MalformedGDAXResponse "Account response body was invalid."
-        Just val -> return val
+listAccounts :: (MonadIO m, MonadThrow m) => GDAX -> m Value
+listAccounts gdax =
+    gdaxSignedGet gdax "/accounts"
 
 -- getTime - Example of making an unauthenticated request against GDAX.
 
-getTime :: (MonadIO m, MonadThrow m) => m UTCTime
-getTime = do
-    res <- liftIO $ get "https://api.gdax.com/time"
-    case res ^? responseBody . key "epoch" . _Double of
+getTime :: (MonadIO m, MonadThrow m) => GDAX -> m UTCTime
+getTime gdax = do
+    res <- gdaxGet gdax "/time"
+    case (res :: Value) ^? key "epoch" . _Double of
         Nothing  -> throwM $ MalformedGDAXResponse "Epoch field was either missing or malformed in response from GET /time."
         Just val -> return $ posixSecondsToUTCTime $ realToFrac val
+
+-- Errors
 
 data MalformedGDAXResponse
     = MalformedGDAXResponse Text
