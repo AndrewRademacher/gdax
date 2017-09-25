@@ -35,6 +35,7 @@ import qualified Data.ByteString.Base64     as Base64
 import qualified Data.ByteString.Char8      as CBS
 import qualified Data.ByteString.Lazy.Char8 as CLBS
 import           Data.Monoid
+import qualified Data.Text                  as T
 import           Data.Time
 import           Data.Time.Clock.POSIX
 import           Network.GDAX.Exceptions
@@ -108,30 +109,29 @@ mkSandboxUnsignedGdax = do
 gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 gdaxGet g path = do
     res <- liftIO $ get (g ^. endpoint <> path)
-    case Aeson.decode (res ^. responseBody) of
-        Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
-        Just val -> return val
+    decodeResult res
 
 gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 gdaxSignedGet g path = do
     signedOpts <- signOptions g "GET" path Nothing defaults
     res <- liftIO $ getWith signedOpts (g ^. endpoint <> path)
-    case Aeson.decode (res ^. responseBody) of
-        Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
-        Just val -> return val
+    decodeResult res
 
 gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Path -> a -> m b
 gdaxSignedPost g path body = do
     signedOpts <- signOptions g "POST" path (Just bodyBS) opts
     res <- liftIO $ postWith signedOpts (g ^. endpoint <> path) bodyBS
-    case Aeson.decode (res ^. responseBody) of
-        Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
-        Just val -> return val
+    decodeResult res
     where
         opts = defaults & header "Content-Type" .~ [ "application/json" ]
         bodyBS = CLBS.toStrict $ Aeson.encode body
 
--- | No export
+decodeResult :: (MonadThrow m, FromJSON a) => Response CLBS.ByteString -> m a
+decodeResult res =
+    case Aeson.eitherDecode' (res ^. responseBody) of
+        Left err  -> throwM $ MalformedGDAXResponse (T.pack err)
+        Right val -> return val
+
 signOptions :: (MonadIO m) => Gdax -> Method -> Path -> (Maybe ByteString) -> Options -> m Options
 signOptions g method path mBody opts = do
     time <- liftIO $ getCurrentTime
@@ -144,4 +144,3 @@ signOptions g method path mBody opts = do
         & header "CB-ACCESS-SIGN" .~ [ sig ]
         & header "CB-ACCESS-TIMESTAMP" .~ [ timestamp ]
         & header "CB-ACCESS-PASSPHRASE" .~ [ (g ^. passphrase) ]
-

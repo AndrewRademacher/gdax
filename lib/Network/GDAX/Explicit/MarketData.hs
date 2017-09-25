@@ -18,6 +18,9 @@ import           Network.GDAX.Core
 import           Network.GDAX.Exceptions
 import           Network.GDAX.Types.MarketData
 
+getProducts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Product)
+getProducts g = gdaxGet g "/products"
+
 getCurrencies :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Currency)
 getCurrencies g = gdaxGet g "/currencies"
 

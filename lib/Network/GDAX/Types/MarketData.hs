@@ -12,6 +12,40 @@ import           Data.Typeable
 import           GHC.Generics
 import           Network.GDAX.Parsers
 
+-- Product
+
+newtype ProductId = ProductId { unProductId :: Text }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show ProductId where
+    show = show . unProductId
+
+data Product
+    = Product
+        { _prodId             :: ProductId
+        , _prodBaseCurrency   :: CurrencyId
+        , _prodQuoteCurrency  :: CurrencyId
+        , _prodBaseMinSize    :: Scientific
+        , _prodBaseMaxSize    :: Scientific
+        , _prodQuoteIncrement :: Scientific
+        , _prodDisplayName    :: Text
+        , _prodMarginEnabled  :: Bool
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Product where
+    parseJSON = withObject "Product" $ \o -> Product
+        <$> o .: "id"
+        <*> o .: "base_currency"
+        <*> o .: "quote_currency"
+        <*> (o .: "base_min_size" >>= textScientific)
+        <*> (o .: "base_max_size" >>= textScientific)
+        <*> (o .: "quote_increment" >>= textScientific)
+        <*> o .: "display_name"
+        <*> o .: "margin_enabled"
+
+-- Currency
+
 newtype CurrencyId = CurrencyId { unCurrencyId :: Text }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
 
@@ -27,7 +61,7 @@ data Currency
     deriving (Show, Typeable, Generic)
 
 instance FromJSON Currency where
-    parseJSON = withObject "Currency" $ \m -> Currency
-        <$> m .: "id"
-        <*> m .: "name"
-        <*> (m .: "min_size" >>= textScientific)
+    parseJSON = withObject "Currency" $ \o -> Currency
+        <$> o .: "id"
+        <*> o .: "name"
+        <*> (o .: "min_size" >>= textScientific)

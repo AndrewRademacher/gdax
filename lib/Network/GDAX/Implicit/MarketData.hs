@@ -13,6 +13,11 @@ import           Network.GDAX.Core
 import qualified Network.GDAX.Explicit.MarketData as Explicit
 import           Network.GDAX.Types.MarketData
 
+getProducts :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Product)
+getProducts = do
+    g <- (^. gdax) <$> ask
+    Explicit.getProducts g
+
 getCurrencies :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Currency)
 getCurrencies = do
     g <- (^. gdax) <$> ask
