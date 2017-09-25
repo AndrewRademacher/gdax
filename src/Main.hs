@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Main where
 
@@ -22,6 +23,49 @@ import           Data.Time.Clock.POSIX
 import           Network.Wreq
 import           System.Environment
 import           Text.Printf
+
+
+type Endpoint = String
+type AccessKey = ByteString
+type SecretKey = ByteString
+type Passphrase = ByteString
+
+live :: Endpoint
+live = "https://api.gdax.com"
+
+sandbox :: Endpoint
+sandbox = "https://api-public.sandbox.gdax.com"
+
+class HasEndpoint a where
+    endpoint :: Lens' a Endpoint
+class HasAccessKey a where
+    accessKey :: Lens' a AccessKey
+class HasSecretKey a where
+    secretKey :: Lens' a SecretKey
+class HasPassphrase a where
+    passphrase :: Lens' a Passphrase
+
+data GDAX
+    = GDAX
+        { _gdaxEndpoint   :: Endpoint
+        , _gdaxAccessKey  :: AccessKey
+        , _gdaxSecretKey  :: SecretKey
+        , _gdaxPassphrase :: Passphrase
+        }
+    deriving (Show)
+
+$(makeClassy ''GDAX)
+
+instance HasEndpoint GDAX where endpoint = gdaxEndpoint
+instance HasAccessKey GDAX where accessKey = gdaxAccessKey
+instance HasSecretKey GDAX where secretKey = gdaxSecretKey
+instance HasPassphrase GDAX where passphrase = gdaxPassphrase
+
+mkLiveGDAX :: AccessKey -> SecretKey -> Passphrase -> GDAX
+mkLiveGDAX = GDAX live
+
+mkSandboxGDAX :: AccessKey -> SecretKey -> Passphrase -> GDAX
+mkSandboxGDAX = GDAX sandbox
 
 main :: IO ()
 main = do
