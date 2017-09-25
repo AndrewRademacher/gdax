@@ -31,6 +31,7 @@ library
     build-depends:     base     >4 && < 6
 
                      , aeson
+                     , aeson-casing
                      , base64-bytestring
                      , byteable
                      , bytestring
@@ -41,8 +42,10 @@ library
                      , lens
                      , lens-aeson
                      , mtl
+                     , scientific
                      , text
                      , time
+                     , vector
                      , wreq
 
 executable sandbox
@@ -56,6 +59,7 @@ executable sandbox
 
                       , gdax
 
+                      , aeson
                       , aeson-pretty
                       , base64-bytestring
                       , bytestring
