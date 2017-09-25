@@ -48,8 +48,8 @@ class HasSecretKey a where
 class HasPassphrase a where
     passphrase :: Lens' a Passphrase
 
-data GDAX
-    = GDAX
+data Gdax
+    = Gdax
         { _gdaxEndpoint   :: Endpoint
         , _gdaxAccessKey  :: AccessKey
         , _gdaxSecretKey  :: SecretKey
@@ -57,24 +57,24 @@ data GDAX
         }
     deriving (Show)
 
-$(makeClassy ''GDAX)
+$(makeClassy ''Gdax)
 
-instance HasEndpoint GDAX where endpoint = gdaxEndpoint
-instance HasAccessKey GDAX where accessKey = gdaxAccessKey
-instance HasSecretKey GDAX where secretKey = gdaxSecretKey
-instance HasPassphrase GDAX where passphrase = gdaxPassphrase
+instance HasEndpoint Gdax where endpoint = gdaxEndpoint
+instance HasAccessKey Gdax where accessKey = gdaxAccessKey
+instance HasSecretKey Gdax where secretKey = gdaxSecretKey
+instance HasPassphrase Gdax where passphrase = gdaxPassphrase
 
-mkLiveGDAX :: AccessKey -> SecretKey -> Passphrase -> GDAX
-mkLiveGDAX = GDAX live
+mkLiveGdax :: AccessKey -> SecretKey -> Passphrase -> Gdax
+mkLiveGdax = Gdax live
 
-mkSandboxGDAX :: AccessKey -> SecretKey -> Passphrase -> GDAX
-mkSandboxGDAX = GDAX sandbox
+mkSandboxGdax :: AccessKey -> SecretKey -> Passphrase -> Gdax
+mkSandboxGdax = Gdax sandbox
 
-mkLiveUnsignedGDAX :: GDAX
-mkLiveUnsignedGDAX = GDAX live "" "" ""
+mkLiveUnsignedGdax :: Gdax
+mkLiveUnsignedGdax = Gdax live "" "" ""
 
-mkSandboxUnsignedGDAX :: GDAX
-mkSandboxUnsignedGDAX = GDAX sandbox "" "" ""
+mkSandboxUnsignedGdax :: Gdax
+mkSandboxUnsignedGdax = Gdax sandbox "" "" ""
 
 main :: IO ()
 main = do
@@ -82,7 +82,7 @@ main = do
     secretKey <- liftIO $ Base64.decodeLenient . CBS.pack <$> getEnv "GDAX_SECRET"
     passphrase <- liftIO $ CBS.pack <$> getEnv "GDAX_PASSPHRASE"
 
-    let gdax = mkSandboxGDAX accessKey secretKey passphrase
+    let gdax = mkSandboxGdax accessKey secretKey passphrase
 
     putStrLn "getTime:"
     time <- getTime gdax
@@ -101,14 +101,14 @@ main = do
 type Path = String
 type Method = ByteString
 
-gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => GDAX -> Path -> m b
+gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 gdaxGet gdax path = do
     res <- liftIO $ get (gdax ^. endpoint <> path)
     case Aeson.decode (res ^. responseBody) of
         Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
         Just val -> return val
 
-gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => GDAX -> Path -> m b
+gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 gdaxSignedGet gdax path = do
     signedOpts <- signOptions gdax "GET" path Nothing defaults
     res <- liftIO $ getWith signedOpts (gdax ^. endpoint <> path)
@@ -116,7 +116,7 @@ gdaxSignedGet gdax path = do
         Nothing -> throwM $ MalformedGDAXResponse "Could not parse GDAX response body."
         Just val -> return val
 
-gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => GDAX -> Path -> a -> m b
+gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Path -> a -> m b
 gdaxSignedPost gdax path body = do
     signedOpts <- signOptions gdax "POST" path (Just bodyBS) opts
     res <- liftIO $ postWith signedOpts (gdax ^. endpoint <> path) bodyBS
@@ -128,7 +128,7 @@ gdaxSignedPost gdax path body = do
         bodyBS = CLBS.toStrict $ Aeson.encode body
 
 -- | No export
-signOptions :: (MonadIO m) => GDAX -> Method -> Path -> (Maybe ByteString) -> Options -> m Options
+signOptions :: (MonadIO m) => Gdax -> Method -> Path -> (Maybe ByteString) -> Options -> m Options
 signOptions gdax method path mBody opts = do
     time <- liftIO $ getCurrentTime
     let timestamp = CBS.pack $ printf "%.0f" (realToFrac (utcTimeToPOSIXSeconds time) :: Double)
@@ -145,12 +145,12 @@ signOptions gdax method path mBody opts = do
 
 -- placeOrder - Example of making authenticated request with body against GDAX.
 
-placeOrder' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGDAX e) => m Value
+placeOrder' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m Value
 placeOrder' = do
-    gdax <- (^. gDAX) <$> ask
+    gdax <- (^. gdax) <$> ask
     placeOrder gdax
 
-placeOrder :: (MonadIO m, MonadThrow m) => GDAX -> m Value
+placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> m Value
 placeOrder gdax = gdaxSignedPost gdax "/orders" body
     where
         body = object
@@ -162,23 +162,23 @@ placeOrder gdax = gdaxSignedPost gdax "/orders" body
 
 -- listAccounts - Example of making an authenticated request against GDAX.
 
-listAccounts' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGDAX e) => m Value
+listAccounts' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m Value
 listAccounts' = do
-    gdax <- (^. gDAX) <$> ask
+    gdax <- (^. gdax) <$> ask
     listAccounts gdax
 
-listAccounts :: (MonadIO m, MonadThrow m) => GDAX -> m Value
+listAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m Value
 listAccounts gdax =
     gdaxSignedGet gdax "/accounts"
 
 -- getTime - Example of making an unauthenticated request against GDAX.
 
-getTime' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGDAX e) => m UTCTime
+getTime' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m UTCTime
 getTime' = do
-    gdax <- (^. gDAX) <$> ask
+    gdax <- (^. gdax) <$> ask
     getTime gdax
 
-getTime :: (MonadIO m, MonadThrow m) => GDAX -> m UTCTime
+getTime :: (MonadIO m, MonadThrow m) => Gdax -> m UTCTime
 getTime gdax = do
     res <- gdaxGet gdax "/time"
     case (res :: Value) ^? key "epoch" . _Double of
