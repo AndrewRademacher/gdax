@@ -18,6 +18,8 @@ library
 
     ghc-options:       -Wall
 
+    default-extensions: StrictData
+
     exposed-modules:   Network.GDAX.Explicit.MarketData
                        Network.GDAX.Explicit.Private
                        Network.GDAX.Implicit.MarketData
