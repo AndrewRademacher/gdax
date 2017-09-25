@@ -19,6 +19,7 @@ import           Data.Vector
 import           Network.GDAX.Core
 import           Network.GDAX.Exceptions
 import           Network.GDAX.Types.MarketData
+import           Network.Wreq
 
 getProducts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Product)
 getProducts g = gdaxGet g "/products"
@@ -37,6 +38,18 @@ getProductTicker g pid = gdaxGet g ("/products/" <> T.unpack (unProductId pid) <
 
 getProductTrades :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> m (Vector Trade)
 getProductTrades g pid = gdaxGet g ("/products/" <> T.unpack (unProductId pid) <> "/trades")
+
+getProductHistory :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> Maybe StartTime -> Maybe EndTime -> Maybe Granularity -> m (Vector Candle)
+getProductHistory g pid mst met mg = gdaxGetWith g ("/products" <> T.unpack (unProductId pid) <> "/candles") opts
+    where
+        opts = defaults
+                & param "start" .~ nothingToEmpty (fmt <$> mst)
+                & param "end" .~ nothingToEmpty (fmt <$> met)
+                & param "granularity" .~ nothingToEmpty (T.pack . show <$> mg)
+        nothingToEmpty (Just v) = [ v ]
+        nothingToEmpty Nothing  = []
+        fmt t  = let t' = formatTime defaultTimeLocale "%FT%T." t
+                 in T.pack $ t' <> Prelude.take 6 (formatTime defaultTimeLocale "%q" t) <> "Z"
 
 getCurrencies :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Currency)
 getCurrencies g = gdaxGet g "/currencies"

@@ -43,6 +43,11 @@ getProductTrades pid = do
     g <- (^. gdax) <$> ask
     Explicit.getProductTrades g pid
 
+getProductHistory :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ProductId -> Maybe StartTime -> Maybe EndTime -> Maybe Granularity -> m (Vector Candle)
+getProductHistory pid mst met mg = do
+    g <- (^. gdax) <$> ask
+    Explicit.getProductHistory g pid mst met mg
+
 getCurrencies :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Currency)
 getCurrencies = do
     g <- (^. gdax) <$> ask

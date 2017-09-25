@@ -19,7 +19,9 @@ module Network.GDAX.Core
     , mkLiveGdax, mkSandboxGdax
     , mkLiveUnsignedGdax, mkSandboxUnsignedGdax
 
-    , gdaxGet, gdaxSignedGet
+    , gdaxGet
+    , gdaxGetWith
+    , gdaxSignedGet
     , gdaxSignedPost
     ) where
 
@@ -109,6 +111,11 @@ mkSandboxUnsignedGdax = do
 gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 gdaxGet g path = do
     res <- liftIO $ get (g ^. endpoint <> path)
+    decodeResult res
+
+gdaxGetWith :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> Options -> m b
+gdaxGetWith g path opts = do
+    res <- liftIO $ getWith opts (g ^. endpoint <> path)
     decodeResult res
 
 gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b

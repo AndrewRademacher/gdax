@@ -7,12 +7,15 @@ module Network.GDAX.Types.MarketData where
 
 
 import           Data.Aeson
+import           Data.Aeson.Types
 import           Data.Int
-import           Data.Text            (Text)
+import           Data.Text             (Text)
 import           Data.Time
+import           Data.Time.Clock.POSIX
 import           Data.Typeable
 import           Data.UUID
-import           Data.Vector          (Vector)
+import           Data.Vector           (Vector)
+import qualified Data.Vector.Generic   as V
 import           GHC.Generics
 import           Network.GDAX.Parsers
 
@@ -189,6 +192,32 @@ instance FromJSON Trade where
         <*> (o .: "price" >>= textDouble)
         <*> (o .: "size" >>= textDouble)
         <*> o .: "side"
+
+-- Candles
+
+type StartTime = UTCTime
+type EndTime = UTCTime
+type Granularity = Int
+
+type Low = Double
+type High = Double
+type Open = Double
+type Close = Double
+type Volume = Double
+
+data Candle = Candle UTCTime Low High Open Close Volume
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Candle where
+    parseJSON = withArray "Candle" $ \v ->
+        case V.length v of
+            6 -> Candle <$> ((posixSecondsToUTCTime . fromIntegral) <$> (parseJSON (v V.! 0) :: Parser Int64))
+                <*> parseJSON (v V.! 1)
+                <*> parseJSON (v V.! 2)
+                <*> parseJSON (v V.! 3)
+                <*> parseJSON (v V.! 4)
+                <*> parseJSON (v V.! 5)
+            _ -> fail "Candle array was not 6 elements wide."
 
 -- Currency
 
