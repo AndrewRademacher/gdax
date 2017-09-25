@@ -9,6 +9,7 @@ module Network.GDAX.Types.MarketData where
 import           Data.Aeson
 import           Data.Int
 import           Data.Text            (Text)
+import           Data.Time
 import           Data.Typeable
 import           Data.UUID
 import           Data.Vector          (Vector)
@@ -126,6 +127,36 @@ instance FromJSON Book where
         <$> o .: "bids"
         <*> o .: "asks"
         <*> o .: "sequence"
+
+-- Ticker
+
+newtype TradeId = TradeId { unTradeId :: Int64 }
+    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show TradeId where
+    show = show . unTradeId
+
+data Tick
+    = Tick
+        { _tickTradeId :: TradeId
+        , _tickPrice   :: Double
+        , _tickSize    :: Double
+        , _tickBid     :: Double
+        , _tickAsk     :: Double
+        , _tickVolume  :: Double
+        , _tickTime    :: UTCTime
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Tick where
+    parseJSON = withObject "Tick" $ \o -> Tick
+        <$> o .: "trade_id"
+        <*> (o .: "price" >>= textDouble)
+        <*> (o .: "size" >>= textDouble)
+        <*> (o .: "bid" >>= textDouble)
+        <*> (o .: "ask" >>= textDouble)
+        <*> o .: "volume"
+        <*> o .: "time"
 
 -- Currency
 

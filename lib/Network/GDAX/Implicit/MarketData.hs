@@ -33,6 +33,11 @@ getProductOrderBook pid = do
     g <- (^. gdax) <$> ask
     Explicit.getProductOrderBook g pid
 
+getProductTicker :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ProductId -> m Tick
+getProductTicker pid = do
+    g <- (^. gdax) <$> ask
+    Explicit.getProductTicker g pid
+
 getCurrencies :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Currency)
 getCurrencies = do
     g <- (^. gdax) <$> ask

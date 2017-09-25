@@ -32,6 +32,9 @@ getProductTop50OfBook g pid = gdaxGet g ("/products/" <> T.unpack (unProductId p
 getProductOrderBook :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> m Book
 getProductOrderBook g pid = gdaxGet g ("/products/" <> T.unpack (unProductId pid) <> "/book?level=3")
 
+getProductTicker :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> m Tick
+getProductTicker g pid = gdaxGet g ("/products/" <> T.unpack (unProductId pid) <> "/ticker")
+
 getCurrencies :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Currency)
 getCurrencies g = gdaxGet g "/currencies"
 
