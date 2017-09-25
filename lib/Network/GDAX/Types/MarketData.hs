@@ -130,12 +130,6 @@ instance FromJSON Book where
 
 -- Ticker
 
-newtype TradeId = TradeId { unTradeId :: Int64 }
-    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show TradeId where
-    show = show . unTradeId
-
 data Tick
     = Tick
         { _tickTradeId :: TradeId
@@ -157,6 +151,44 @@ instance FromJSON Tick where
         <*> (o .: "ask" >>= textDouble)
         <*> o .: "volume"
         <*> o .: "time"
+
+-- Trade
+
+newtype TradeId = TradeId { unTradeId :: Int64 }
+    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show TradeId where
+    show = show . unTradeId
+
+data Side
+    = Buy
+    | Sell
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Side where
+    parseJSON = withText "Side" $ \t ->
+        case t of
+            "buy"  -> pure Buy
+            "sell" -> pure Sell
+            _      -> fail "Side was not either buy or sell."
+
+data Trade
+    = Trade
+        { _tradeId    :: TradeId
+        , _tradeTime  :: UTCTime
+        , _tradePrice :: Double
+        , _tradeSize  :: Double
+        , _tradeSide  :: Side
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Trade where
+    parseJSON = withObject "Trade" $ \o -> Trade
+        <$> o .: "trade_id"
+        <*> o .: "time"
+        <*> (o .: "price" >>= textDouble)
+        <*> (o .: "size" >>= textDouble)
+        <*> o .: "side"
 
 -- Currency
 
