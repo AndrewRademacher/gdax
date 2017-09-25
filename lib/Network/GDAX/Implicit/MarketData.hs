@@ -8,8 +8,15 @@ import           Control.Monad.Catch
 import           Control.Monad.IO.Class
 import           Control.Monad.Reader
 import           Data.Time
+import           Data.Vector
 import           Network.GDAX.Core
 import qualified Network.GDAX.Explicit.MarketData as Explicit
+import           Network.GDAX.Types.MarketData
+
+getCurrencies :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Currency)
+getCurrencies = do
+    g <- (^. gdax) <$> ask
+    Explicit.getCurrencies g
 
 getTime :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m UTCTime
 getTime = do

@@ -22,10 +22,12 @@ library
                        Network.GDAX.Explicit.Private
                        Network.GDAX.Implicit.MarketData
                        Network.GDAX.Implicit.Private
+                       Network.GDAX.Types.MarketData
                        Network.GDAX.Core
                        Network.GDAX.Exceptions
                        Network.GDAX.Explicit
                        Network.GDAX.Implicit
+                       Network.GDAX.Parsers
                        Network.GDAX
 
     build-depends:     base     >4 && < 6
