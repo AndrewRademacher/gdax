@@ -18,6 +18,21 @@ getProducts = do
     g <- (^. gdax) <$> ask
     Explicit.getProducts g
 
+getProductTopOfBook :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ProductId -> m AggrigateBook
+getProductTopOfBook pid = do
+    g <- (^. gdax) <$> ask
+    Explicit.getProductTopOfBook g pid
+
+getProductTop50OfBook :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ProductId -> m AggrigateBook
+getProductTop50OfBook pid = do
+    g <- (^. gdax) <$> ask
+    Explicit.getProductTop50OfBook g pid
+
+getProductOrderBook :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ProductId -> m Book
+getProductOrderBook pid = do
+    g <- (^. gdax) <$> ask
+    Explicit.getProductOrderBook g pid
+
 getCurrencies :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Currency)
 getCurrencies = do
     g <- (^. gdax) <$> ask

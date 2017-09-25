@@ -49,6 +49,7 @@ library
                      , scientific
                      , text
                      , time
+                     , uuid
                      , vector
                      , wreq
 

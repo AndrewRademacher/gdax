@@ -12,3 +12,4 @@ import           Network.GDAX.Core                as Core hiding (Method, Path,
 import           Network.GDAX.Exceptions          as Exceptions
 import           Network.GDAX.Explicit.MarketData as MarketData
 import           Network.GDAX.Explicit.Private    as Private
+import           Network.GDAX.Types.MarketData    as MarketData
