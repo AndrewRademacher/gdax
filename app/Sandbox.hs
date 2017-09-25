@@ -4,7 +4,7 @@ import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Base64     as Base64
 import qualified Data.ByteString.Char8      as CBS
 import qualified Data.ByteString.Lazy.Char8 as CLBS
-import           Network.GDAX
+import           Network.GDAX.Explicit
 import           System.Environment
 
 main :: IO ()

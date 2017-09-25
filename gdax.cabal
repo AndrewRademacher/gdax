@@ -18,11 +18,15 @@ library
 
     ghc-options:       -Wall
 
-    exposed-modules:   Network.GDAX
+    exposed-modules:   Network.GDAX.Explicit.MarketData
+                       Network.GDAX.Explicit.Private
+                       Network.GDAX.Implicit.MarketData
+                       Network.GDAX.Implicit.Private
                        Network.GDAX.Core
                        Network.GDAX.Exceptions
-                       Network.GDAX.MarketData
-                       Network.GDAX.Private
+                       Network.GDAX.Explicit
+                       Network.GDAX.Implicit
+                       Network.GDAX
 
     build-depends:     base     >4 && < 6
 
