@@ -145,6 +145,11 @@ signOptions gdax method path mBody opts = do
 
 -- placeOrder - Example of making authenticated request with body against GDAX.
 
+placeOrder' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGDAX e) => m Value
+placeOrder' = do
+    gdax <- (^. gDAX) <$> ask
+    placeOrder gdax
+
 placeOrder :: (MonadIO m, MonadThrow m) => GDAX -> m Value
 placeOrder gdax = gdaxSignedPost gdax "/orders" body
     where
@@ -155,15 +160,23 @@ placeOrder gdax = gdaxSignedPost gdax "/orders" body
             , "product_id" .= ("BTC-USD" :: Text)
             ]
 
-
-
 -- listAccounts - Example of making an authenticated request against GDAX.
+
+listAccounts' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGDAX e) => m Value
+listAccounts' = do
+    gdax <- (^. gDAX) <$> ask
+    listAccounts gdax
 
 listAccounts :: (MonadIO m, MonadThrow m) => GDAX -> m Value
 listAccounts gdax =
     gdaxSignedGet gdax "/accounts"
 
 -- getTime - Example of making an unauthenticated request against GDAX.
+
+getTime' :: (MonadIO m, MonadThrow m, MonadReader e m, HasGDAX e) => m UTCTime
+getTime' = do
+    gdax <- (^. gDAX) <$> ask
+    getTime gdax
 
 getTime :: (MonadIO m, MonadThrow m) => GDAX -> m UTCTime
 getTime gdax = do
