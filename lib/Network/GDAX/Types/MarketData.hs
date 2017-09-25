@@ -219,6 +219,26 @@ instance FromJSON Candle where
                 <*> parseJSON (v V.! 5)
             _ -> fail "Candle array was not 6 elements wide."
 
+-- Stats
+
+data Stats
+    = Stats
+        { _statsOpen        :: Open
+        , _statsHigh        :: High
+        , _statsLow         :: Low
+        , _statsVolume      :: Volume
+        , _statsVolume30Day :: Volume
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Stats where
+    parseJSON = withObject "Stats" $ \o -> Stats
+        <$> o .: "open"
+        <*> o .: "high"
+        <*> o .: "low"
+        <*> o .: "volume"
+        <*> o .: "volume_30day"
+
 -- Currency
 
 newtype CurrencyId = CurrencyId { unCurrencyId :: Text }

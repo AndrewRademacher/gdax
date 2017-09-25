@@ -40,7 +40,7 @@ getProductTrades :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> m (Vector 
 getProductTrades g pid = gdaxGet g ("/products/" <> T.unpack (unProductId pid) <> "/trades")
 
 getProductHistory :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> Maybe StartTime -> Maybe EndTime -> Maybe Granularity -> m (Vector Candle)
-getProductHistory g pid mst met mg = gdaxGetWith g ("/products" <> T.unpack (unProductId pid) <> "/candles") opts
+getProductHistory g pid mst met mg = gdaxGetWith g ("/products/" <> T.unpack (unProductId pid) <> "/candles") opts
     where
         opts = defaults
                 & param "start" .~ nothingToEmpty (fmt <$> mst)
@@ -50,6 +50,9 @@ getProductHistory g pid mst met mg = gdaxGetWith g ("/products" <> T.unpack (unP
         nothingToEmpty Nothing  = []
         fmt t  = let t' = formatTime defaultTimeLocale "%FT%T." t
                  in T.pack $ t' <> Prelude.take 6 (formatTime defaultTimeLocale "%q" t) <> "Z"
+
+getProductStats :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> m Stats
+getProductStats g pid = gdaxGet g ("/products/" <> T.unpack (unProductId pid) <> "/stats")
 
 getCurrencies :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Currency)
 getCurrencies g = gdaxGet g "/currencies"

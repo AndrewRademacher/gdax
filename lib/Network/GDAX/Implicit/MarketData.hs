@@ -48,6 +48,11 @@ getProductHistory pid mst met mg = do
     g <- (^. gdax) <$> ask
     Explicit.getProductHistory g pid mst met mg
 
+getProductStats :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ProductId -> m Stats
+getProductStats pid = do
+    g <- (^. gdax) <$> ask
+    Explicit.getProductStats g pid
+
 getCurrencies :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Currency)
 getCurrencies = do
     g <- (^. gdax) <$> ask
