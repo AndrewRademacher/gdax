@@ -23,8 +23,13 @@ executable gdax
 
                       , aeson
                       , aeson-casing
+                      , aeson-pretty
+                      , base64-bytestring
+                      , byteable
+                      , bytestring
                       , conduit
                       , conduit-extra
+                      , cryptohash
                       , exceptions
                       , http-client
                       , http-client-tls
