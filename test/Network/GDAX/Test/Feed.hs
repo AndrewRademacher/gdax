@@ -53,8 +53,6 @@ case_heartbeat _ = testCase "Heartbeats" $
                 let hb = Aeson.eitherDecode m :: Either String Heartbeat
                 print hb
                 assertRight hb
-    where
-        -- sub = Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
 
 case_ticker :: Env -> TestTree
 case_ticker _ = testCase "Ticker" $
