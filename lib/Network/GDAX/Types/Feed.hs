@@ -242,6 +242,7 @@ data Match
         , _matchSize         :: Double
         , _matchPrice        :: Double
         }
+    deriving (Show, Typeable, Generic)
 
 instance FromJSON Match where
     parseJSON = withObject "Match" $ \o -> do
@@ -266,6 +267,11 @@ instance FromJSON Match where
 data GdaxMessage
     = GdaxSubscriptions Subscriptions
     | GdaxHeartbeat Heartbeat
+    | GdaxTicker Ticker
+    | GdaxLevel2Snapshot Level2Snapshot
+    | GdaxLevel2Update Level2Update
+    | GdaxMatch Match
+    | GdaxFeedError FeedError
     deriving (Show, Typeable, Generic)
 
 instance FromJSON GdaxMessage where
@@ -274,4 +280,10 @@ instance FromJSON GdaxMessage where
         case t of
             "subscriptions" -> GdaxSubscriptions <$> parseJSON (Object o)
             "heartbeat" -> GdaxHeartbeat <$> parseJSON (Object o)
+            "ticker" -> GdaxTicker <$> parseJSON (Object o)
+            "snapshot" -> GdaxLevel2Snapshot <$> parseJSON (Object o)
+            "l2update" -> GdaxLevel2Update <$> parseJSON (Object o)
+            "last_match" -> GdaxMatch <$> parseJSON (Object o)
+            "match" -> GdaxMatch <$> parseJSON (Object o)
+            "error" -> GdaxFeedError <$> parseJSON (Object o)
             _ -> fail $ T.unpack $ "Message of unsupported type '" <> t <> "'."

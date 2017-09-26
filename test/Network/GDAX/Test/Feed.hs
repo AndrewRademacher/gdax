@@ -23,6 +23,7 @@ tests e = testGroup "Feed Parse"
     , case_ticker e
     , case_level2 e
     , case_matches e
+    , case_sum e
     ]
 
 case_heartbeat :: Env -> TestTree
@@ -110,6 +111,31 @@ case_matches _ = testCase "Matches" $
 
         testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelMatches ["BTC-USD"]]
         testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelMatches ["BTC-USD"]]
+
+case_sum :: Env -> TestTree
+case_sum _ = testCase "Sum" $
+        runSecureClient "ws-feed.gdax.com" 443 "/" client
+    where
+        client :: ClientApp ()
+        client conn = do
+            sendTextData conn (Aeson.encode testSub)
+
+            ms <- sequence $ take 100 $ repeat (receiveNotSubs conn)
+
+            sendTextData conn (Aeson.encode testUnSub)
+
+            let res = fmap Aeson.eitherDecode ms
+
+            mapM_ assertRight (res :: [Either String GdaxMessage])
+
+        testSub = Subscribe $ Subscriptions [] subs
+        testUnSub =  UnSubscribe $ Subscriptions [] subs
+        subs =
+            [ ChannelSubscription ChannelHeartbeat ["BTC-USD"]
+            , ChannelSubscription ChannelTicker ["BTC-USD"]
+            , ChannelSubscription ChannelLevel2 ["BTC-USD"]
+            , ChannelSubscription ChannelMatches ["BTC-USD"]
+            ]
 
 receiveNotSubs :: Connection -> IO LBS.ByteString
 receiveNotSubs conn = loop
