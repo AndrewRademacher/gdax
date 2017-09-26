@@ -11,7 +11,8 @@ module Network.GDAX.Core
 
     , HasGdax (..)
     , HasNetworkManager (..)
-    , HasEndpoint (..)
+    , HasRestEndpoint (..)
+    , HasSocketEndpoint (..)
     , HasAccessKey (..)
     , HasSecretKey (..)
     , HasPassphrase (..)
@@ -54,16 +55,24 @@ type Passphrase = ByteString
 type Path = String
 type Method = ByteString
 
-live :: Endpoint
-live = "https://api.gdax.com"
+liveRest :: Endpoint
+liveRest = "https://api.gdax.com"
 
-sandbox :: Endpoint
-sandbox = "https://api-public.sandbox.gdax.com"
+sandboxRest :: Endpoint
+sandboxRest = "https://api-public.sandbox.gdax.com"
+
+liveSocket :: Endpoint
+liveSocket = "ws-feed.gdax.com"
+
+sandboxSocket :: Endpoint
+sandboxSocket = "ws-feed-public.sandbox.gdax.com"
 
 class HasNetworkManager a where
     networkManager :: Lens' a Manager
-class HasEndpoint a where
-    endpoint :: Lens' a Endpoint
+class HasRestEndpoint a where
+    restEndpoint :: Lens' a Endpoint
+class HasSocketEndpoint a where
+    socketEndpoint :: Lens' a Endpoint
 class HasAccessKey a where
     accessKey :: Lens' a AccessKey
 class HasSecretKey a where
@@ -74,7 +83,8 @@ class HasPassphrase a where
 data Gdax
     = Gdax
         { _gdaxNetworkManager :: Manager
-        , _gdaxEndpoint       :: Endpoint
+        , _gdaxRestEndpoint   :: Endpoint
+        , _gdaxSocketEndpoint :: Endpoint
         , _gdaxAccessKey      :: AccessKey
         , _gdaxSecretKey      :: SecretKey
         , _gdaxPassphrase     :: Passphrase
@@ -83,7 +93,8 @@ data Gdax
 $(makeClassy ''Gdax)
 
 instance HasNetworkManager Gdax where networkManager = gdaxNetworkManager
-instance HasEndpoint Gdax where endpoint = gdaxEndpoint
+instance HasRestEndpoint Gdax where restEndpoint = gdaxRestEndpoint
+instance HasSocketEndpoint Gdax where socketEndpoint = gdaxSocketEndpoint
 instance HasAccessKey Gdax where accessKey = gdaxAccessKey
 instance HasSecretKey Gdax where secretKey = gdaxSecretKey
 instance HasPassphrase Gdax where passphrase = gdaxPassphrase
@@ -91,27 +102,27 @@ instance HasPassphrase Gdax where passphrase = gdaxPassphrase
 mkLiveGdax :: (MonadIO m) => AccessKey -> SecretKey -> Passphrase -> m Gdax
 mkLiveGdax a s p = do
     m <- newTlsManager
-    return $ Gdax m live a s p
+    return $ Gdax m liveRest liveSocket a s p
 
 mkSandboxGdax :: (MonadIO m) => AccessKey -> SecretKey -> Passphrase -> m Gdax
 mkSandboxGdax a s p = do
     m <- newTlsManager
-    return $ Gdax m sandbox a s p
+    return $ Gdax m sandboxRest sandboxSocket a s p
 
 mkLiveUnsignedGdax :: (MonadIO m) => m Gdax
 mkLiveUnsignedGdax = do
     m <- newTlsManager
-    return $ Gdax m live "" "" ""
+    return $ Gdax m liveRest liveSocket "" "" ""
 
 mkSandboxUnsignedGdax :: (MonadIO m) => m Gdax
 mkSandboxUnsignedGdax = do
     m <- newTlsManager
-    return $ Gdax m sandbox "" "" ""
+    return $ Gdax m sandboxRest sandboxSocket "" "" ""
 
 gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 {-# INLINE gdaxGet #-}
 gdaxGet g path = do
-    res <- liftIO $ getWith opts (g ^. endpoint <> path)
+    res <- liftIO $ getWith opts (g ^. restEndpoint <> path)
     decodeResult res
     where
         opts = defaults & manager .~ Right (g ^. networkManager)
@@ -119,7 +130,7 @@ gdaxGet g path = do
 gdaxGetWith :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> Options -> m b
 {-# INLINE gdaxGetWith #-}
 gdaxGetWith g path opts' = do
-    res <- liftIO $ getWith opts (g ^. endpoint <> path)
+    res <- liftIO $ getWith opts (g ^. restEndpoint <> path)
     decodeResult res
     where
         opts = opts' & manager .~ Right (g ^. networkManager)
@@ -128,7 +139,7 @@ gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 {-# INLINE gdaxSignedGet #-}
 gdaxSignedGet g path = do
     signedOpts <- signOptions g "GET" path Nothing opts
-    res <- liftIO $ getWith signedOpts (g ^. endpoint <> path)
+    res <- liftIO $ getWith signedOpts (g ^. restEndpoint <> path)
     decodeResult res
     where
         opts = defaults & manager .~ Right (g ^. networkManager)
@@ -137,7 +148,7 @@ gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Pat
 {-# INLINE gdaxSignedPost #-}
 gdaxSignedPost g path body = do
     signedOpts <- signOptions g "POST" path (Just bodyBS) opts
-    res <- liftIO $ postWith signedOpts (g ^. endpoint <> path) bodyBS
+    res <- liftIO $ postWith signedOpts (g ^. restEndpoint <> path) bodyBS
     decodeResult res
     where
         opts = defaults & header "Content-Type" .~ [ "application/json" ]
