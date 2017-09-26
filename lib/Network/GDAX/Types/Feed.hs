@@ -475,6 +475,7 @@ data MarginProfileUpdate
         , _mpuQuoteFunding       :: Double
         , _mpuPrivate            :: Bool
         }
+    deriving (Show, Typeable, Generic)
 
 instance FromJSON MarginProfileUpdate where
     parseJSON = withObjectOfType "MarginProfileUpdate" "margin_profile_update" $ \o -> MarginProfileUpdate
