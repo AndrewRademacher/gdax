@@ -1,7 +1,11 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Network.GDAX.Parsers where
 
 import           Data.Aeson.Types
+import           Data.Monoid
 import           Data.Scientific
+import           Data.Text           (Text)
 import qualified Data.Text           as T
 import qualified Data.Vector.Generic as V
 import           Text.Read
@@ -31,3 +35,10 @@ bookItem name f = withArray name $ \a -> f
         <$> (unStringDouble <$> parseJSON (a V.! 0))
         <*> (unStringDouble <$> parseJSON (a V.! 1))
         <*> parseJSON (a V.! 2)
+
+withObjectOfType :: String -> Text -> (Object -> Parser a) -> Value -> Parser a
+withObjectOfType name type' fn = withObject name $ \o -> do
+    t <- o .: "type"
+    if t == type'
+        then fn o
+        else fail $ T.unpack $ "Expected type 'subscribe' got '" <> t <> "'."

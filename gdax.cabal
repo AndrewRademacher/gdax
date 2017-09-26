@@ -24,6 +24,7 @@ library
                        Network.GDAX.Explicit.Private
                        Network.GDAX.Implicit.MarketData
                        Network.GDAX.Implicit.Private
+                       Network.GDAX.Types.Feed
                        Network.GDAX.Types.MarketData
                        Network.GDAX.Core
                        Network.GDAX.Exceptions

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedLists   #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
@@ -5,12 +6,14 @@ module Main where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.Aeson                 (Value)
+import qualified Data.Aeson                 as Aeson
 import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Base64     as Base64
 import qualified Data.ByteString.Char8      as CBS
 import qualified Data.ByteString.Lazy.Char8 as CLBS
 import           Data.Text                  (Text)
 import           Network.GDAX.Explicit
+import           Network.GDAX.Types.Feed
 import           Network.WebSockets
 import           System.Environment
 import           Wuss
@@ -34,10 +37,13 @@ printPrettyLn = liftIO . CLBS.putStrLn . encodePretty
 subscribeSocket :: IO ()
 subscribeSocket = runSecureClient "ws-feed.gdax.com" 443 "/" client
 
+testSub :: Subscribe
+testSub = Subscribe [] [ChannelSubscription Full ["BTC-USD"]]
+
 client :: ClientApp ()
 client conn = do
     putStrLn "Connection opened.."
-    sendTextData conn ("{\"type\":\"subscribe\",\"channels\":[{\"name\":\"full\",\"product_ids\":[\"BTC-USD\"]}]}" :: Text)
+    sendTextData conn (Aeson.encode testSub)
     void . forever $ do
         msg <- receiveData conn
         print (msg :: Text)

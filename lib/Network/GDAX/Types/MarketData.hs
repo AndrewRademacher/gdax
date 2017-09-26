@@ -9,6 +9,7 @@ module Network.GDAX.Types.MarketData where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Int
+import           Data.String
 import           Data.Text             (Text)
 import           Data.Time
 import           Data.Time.Clock.POSIX
@@ -22,7 +23,7 @@ import           Network.GDAX.Parsers
 -- Product
 
 newtype ProductId = ProductId { unProductId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show ProductId where
     show = show . unProductId
