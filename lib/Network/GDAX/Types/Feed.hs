@@ -547,6 +547,12 @@ data GdaxMessage
     | GdaxLevel2Snapshot Level2Snapshot
     | GdaxLevel2Update Level2Update
     | GdaxMatch Match
+    | GdaxReceived Received
+    | GdaxOpen Open
+    | GdaxDone Done
+    | GdaxChange Change
+    | GdaxMarginProfileUpdate MarginProfileUpdate
+    | GdaxActivate Activate
     | GdaxFeedError FeedError
     deriving (Show, Typeable, Generic)
 
@@ -561,5 +567,11 @@ instance FromJSON GdaxMessage where
             "l2update" -> GdaxLevel2Update <$> parseJSON (Object o)
             "last_match" -> GdaxMatch <$> parseJSON (Object o)
             "match" -> GdaxMatch <$> parseJSON (Object o)
+            "received" -> GdaxReceived <$> parseJSON (Object o)
+            "open" -> GdaxOpen <$> parseJSON (Object o)
+            "done" -> GdaxDone <$> parseJSON (Object o)
+            "change" -> GdaxChange <$> parseJSON (Object o)
+            "margin_profile_update" -> GdaxMarginProfileUpdate <$> parseJSON (Object o)
+            "activate" -> GdaxActivate <$> parseJSON (Object o)
             "error" -> GdaxFeedError <$> parseJSON (Object o)
             _ -> fail $ T.unpack $ "Message of unsupported type '" <> t <> "'."

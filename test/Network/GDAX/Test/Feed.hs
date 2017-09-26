@@ -6,14 +6,16 @@ module Network.GDAX.Test.Feed
     ) where
 
 import           Control.Lens
-import           Data.Aeson              (Value (..))
-import qualified Data.Aeson              as Aeson
+import           Data.Aeson                    (Value (..))
+import qualified Data.Aeson                    as Aeson
 import           Data.Aeson.Lens
-import qualified Data.ByteString.Lazy    as LBS
-import qualified Data.Set                as Set
-import           Data.Text               (Text)
+import qualified Data.ByteString.Lazy          as LBS
+import qualified Data.Set                      as Set
+import           Data.Text                     (Text)
+import           Data.Vector                   (Vector)
 import           Network.GDAX.Test.Types
 import           Network.GDAX.Types.Feed
+import           Network.GDAX.Types.MarketData (ProductId)
 import           Network.WebSockets
 import           Test.Tasty
 import           Test.Tasty.HUnit
@@ -29,33 +31,30 @@ tests e = testGroup "Feed Parse"
     , case_sum e
     ]
 
-case_heartbeat :: Env -> TestTree
-case_heartbeat _ = testCase "Heartbeats" $
-        runSecureClient "ws-feed.gdax.com" 443 "/" client
+mkSubscriptions :: ProductId -> Vector Channel -> Subscriptions
+mkSubscriptions pid cs = Subscriptions [] $ fmap fn cs
     where
-        client :: ClientApp ()
-        client conn = do
-            sendTextData conn (Aeson.encode testSub)
+        fn c = ChannelSubscription c [pid]
 
-            m1 <- receiveNotSubs conn
-
-            sendTextData conn (Aeson.encode testUnSub)
-
-            let h1 = Aeson.eitherDecode m1 :: Either String Heartbeat
-
-            assertRight h1
-
-        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
-        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
-
-testClient :: Subscriptions -> [Text] -> ClientApp ()
-testClient subs types conn = do
+testClient :: Subscriptions -> [Text] -> (LBS.ByteString -> IO ()) -> ClientApp ()
+testClient subs types handler conn = do
     sendTextData conn (Aeson.encode testSub)
-    receiveOfType types
+    m1 <- receiveOfTypes conn types
+    handler m1
     sendTextData conn (Aeson.encode testUnSub)
     where
         testSub = Subscribe subs
         testUnSub =  UnSubscribe subs
+
+case_heartbeat :: Env -> TestTree
+case_heartbeat _ = testCase "Heartbeats" $
+        runSecureClient "ws-feed.gdax.com" 443 "/" $
+            testClient (mkSubscriptions "BTC-USD" [ChannelHeartbeat]) ["heartbeat"] $ \m -> do
+                let hb = Aeson.eitherDecode m :: Either String Heartbeat
+                print hb
+                assertRight hb
+    where
+        -- sub = Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
 
 case_ticker :: Env -> TestTree
 case_ticker _ = testCase "Ticker" $
@@ -191,7 +190,7 @@ receiveOfTypes conn ts = loop
             case asValue of
                 Left er -> fail (show er)
                 Right v ->
-                    case v ^? key "type" of
+                    case v ^? key "type" . _String of
                         Nothing -> loop
                         Just t ->
                             if Set.member t tset

@@ -106,5 +106,6 @@ test-suite test-gdax
                       , tasty-hunit
                       , text
                       , time
+                      , vector
                       , websockets
                       , wuss
