@@ -5,12 +5,22 @@ module Network.GDAX.Test.MarketData
     ( tests
     ) where
 
+import           Control.Lens
 import           Control.Monad.Reader
 import           Data.Time
 import           Network.GDAX.Implicit
 import           Network.GDAX.Test.Types
 import           Test.Tasty
 import           Test.Tasty.HUnit
+
+data LocalEnv
+    = LocalEnv
+        { _localGdax :: Gdax
+        }
+
+$(makeClassy ''LocalEnv)
+
+instance HasGdax LocalEnv where gdax = localGdax
 
 --------------------------------
 -- NOTE: ["case_parse" test cases]
@@ -23,18 +33,20 @@ import           Test.Tasty.HUnit
 --
 --------------------------------
 
-tests :: Gdax -> TestTree
-tests g = testGroup "MarketData Parse"
-    [ case_parse g "getProducts"            $ getProducts
-    , case_parse g "getProductTopOfBook"    $ getProductTopOfBook     defProduct
-    , case_parse g "getProductTop50OfBook"  $ getProductTop50OfBook   defProduct
-    , case_parse g "getProductOrderBook"    $ getProductOrderBook     defProduct
-    , case_parse g "getProductTicker"       $ getProductTicker        defProduct
-    , case_parse g "getProductTrades"       $ getProductTrades        defProduct
-    , case_parse g "getProductHistory"      $ getProductHistory       defProduct defStart defEnd (Just 3600)
-    , case_parse g "getCurrencies"          $ getCurrencies
-    , case_parse g "getExchangeTime"        $ getTime
+tests :: Env -> TestTree
+tests e = testGroup "MarketData Parse"
+    [ case_parse l "getProducts"            $ getProducts
+    , case_parse l "getProductTopOfBook"    $ getProductTopOfBook     defProduct
+    , case_parse l "getProductTop50OfBook"  $ getProductTop50OfBook   defProduct
+    , case_parse l "getProductOrderBook"    $ getProductOrderBook     defProduct
+    , case_parse l "getProductTicker"       $ getProductTicker        defProduct
+    , case_parse l "getProductTrades"       $ getProductTrades        defProduct
+    , case_parse l "getProductHistory"      $ getProductHistory       defProduct defStart defEnd (Just 3600)
+    , case_parse l "getCurrencies"          $ getCurrencies
+    , case_parse l "getExchangeTime"        $ getTime
     ]
+    where
+        l = e ^. liveUnsigned
 
 defProduct :: ProductId
 defProduct = ProductId "BTC-USD"
@@ -48,5 +60,5 @@ defEnd :: Maybe UTCTime
 defEnd = Just $ parseTimeOrError True defaultTimeLocale "%FT%X%z" "2015-10-07T21:22:37+0000"
 
 -- See NOTE: ["case_parse" test cases]
-case_parse :: (Show a) => Gdax -> String -> ReaderT Env IO a -> TestTree
-case_parse g l fn = testCase l $ runReaderT (void fn) (Env g)
+case_parse :: (Show a) => Gdax -> String -> ReaderT LocalEnv IO a -> TestTree
+case_parse g l fn = testCase l $ runReaderT (void fn) (LocalEnv g)
