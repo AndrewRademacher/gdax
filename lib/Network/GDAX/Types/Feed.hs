@@ -10,6 +10,7 @@ import           Data.Text                     (Text)
 import qualified Data.Text                     as T
 import           Data.Time
 import           Data.Typeable
+import           Data.UUID
 import           Data.Vector
 import qualified Data.Vector.Generic           as V
 import           GHC.Generics
@@ -218,7 +219,7 @@ instance FromJSON Level2Update where
 
 data Level2Change
     = Level2Change
-        { _l2bidSide  :: {-# UNPACK #-} Side
+        { _l2bidSide  :: Side
         , _l2bidPrice :: {-# UNPACK #-} Double
         , _l2bidSize  :: {-# UNPACK #-} Double
         }
@@ -229,3 +230,33 @@ instance FromJSON Level2Change where
         <$> parseJSON (a V.! 0)
         <*> (unStringDouble <$> parseJSON (a V.! 1))
         <*> (unStringDouble <$> parseJSON (a V.! 2))
+
+data Match
+    = Match
+        { _matchTradeId      :: TradeId
+        , _matchMakerOrderId :: UUID
+        , _matchTakerOrderId :: UUID
+        , _matchProductId    :: ProductId
+        , _matchSequence     :: Sequence
+        , _matchSide         :: Side
+        , _matchSize         :: Double
+        , _matchPrice        :: Double
+        }
+
+instance FromJSON Match where
+    parseJSON = withObject "Match" $ \o -> do
+        t <- o .: "type"
+        case t of
+            "last_match" -> process o
+            "match" -> process o
+            _ -> fail $ T.unpack $ "Expected type 'subscribe' got '" <> t <> "'."
+        where
+            process o = Match
+                <$> o .: "trade_id"
+                <*> o .: "maker_order_id"
+                <*> o .: "taker_order_id"
+                <*> o .: "product_id"
+                <*> o .: "sequence"
+                <*> o .: "side"
+                <*> (o .: "size" >>= textDouble)
+                <*> (o .: "price" >>= textDouble)
