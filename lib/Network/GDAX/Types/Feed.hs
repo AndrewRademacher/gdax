@@ -398,11 +398,11 @@ instance FromJSON Done where
         <$> o .: "time"
         <*> o .: "product_id"
         <*> o .: "sequence"
-        <*> o .: "price"
+        <*> (o .: "price" >>= textDouble)
         <*> o .: "order_id"
         <*> o .: "reason"
         <*> o .: "side"
-        <*> o .: "remaining_size"
+        <*> (o .: "remaining_size" >>= textDouble)
 
 -- Match implemented previously
 

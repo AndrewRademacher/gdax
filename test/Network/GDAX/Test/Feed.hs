@@ -26,11 +26,28 @@ import           Wuss
 
 tests :: Env -> TestTree
 tests e = testGroup "Feed Parse"
-    [ case_heartbeat e
-    , case_ticker e
-    , case_level2 e
-    , case_matches e
-    , case_full e
+    [ parseTestClient (mkBTCSub [ChannelHeartbeat]) "heartbeat" (Proxy :: Proxy Heartbeat)
+    , parseTestClient (mkBTCSub [ChannelTicker]) "ticker" (Proxy :: Proxy Ticker)
+    , parseTestClient (mkBTCSub [ChannelLevel2]) "snapshot" (Proxy :: Proxy Level2Snapshot)
+    , parseTestClient (mkBTCSub [ChannelLevel2]) "l2update" (Proxy :: Proxy Level2Update)
+    , parseTestClient (mkBTCSub [ChannelMatches]) "last_match" (Proxy :: Proxy Match)
+    , parseTestClient (mkBTCSub [ChannelMatches]) "match" (Proxy :: Proxy Match)
+    , parseTestClient (mkBTCSub [ChannelFull]) "received" (Proxy :: Proxy Received)
+    , parseTestClient (mkBTCSub [ChannelFull]) "open" (Proxy :: Proxy Open)
+    , parseTestClient (mkBTCSub [ChannelFull]) "done" (Proxy :: Proxy Done)
+    , parseTestClient (mkBTCSub [ChannelFull]) "match" (Proxy :: Proxy Match)
+
+    -- This one cannot run independently, since you only receive them if you
+    -- trade against yourself.
+    -- , parseTestClient (mkBTCSub [ChannelFull]) "change" (Proxy :: Proxy Change)
+
+    -- This one cannot run independently, since you have to be authenticated with
+    -- a margin profile.
+    -- , parseTestClient (mkBTCSub [ChannelFull]) "margin_profile_update" (Proxy :: Proxy MarginProfileUpdate)
+
+    -- This one cannot run independently, they occur very infrequently.
+    -- , parseTestClient (mkBTCSub [ChannelFull]) "activate" (Proxy :: Proxy Activate)
+
     , case_sum e
     ]
 
@@ -42,21 +59,9 @@ mkSubscriptions pid cs = Subscriptions [] $ fmap fn cs
     where
         fn c = ChannelSubscription c [pid]
 
-testClient :: Subscriptions -> [Text] -> (LBS.ByteString -> IO ()) -> ClientApp ()
-testClient subs types handler conn = do
-    sendTextData conn (Aeson.encode testSub)
-    m1 <- receiveOfTypes conn types
-    handler m1
-    sendTextData conn (Aeson.encode testUnSub)
-    where
-        testSub = Subscribe subs
-        testUnSub =  UnSubscribe subs
-
 parseTestClient :: (FromJSON a) => Subscriptions -> Text -> Proxy a -> TestTree
 parseTestClient subs t pt = testCase (T.unpack t) $ runSecureClient "ws-feed.gdax.com" 443 "/" $ \conn -> do
     sendTextData conn (Aeson.encode testSub)
-    -- m1 <- receiveOfTypes conn types
-    -- handler m1
     m1 <- receiveOfType conn t
     let res = Aeson.eitherDecode m1
     case res of
@@ -70,115 +75,8 @@ parseTestClient subs t pt = testCase (T.unpack t) $ runSecureClient "ws-feed.gda
         testSub = Subscribe subs
         testUnSub =  UnSubscribe subs
 
-case_heartbeat :: Env -> TestTree
-case_heartbeat _ = parseTestClient (mkBTCSub [ChannelHeartbeat]) "heartbeat" (Proxy :: Proxy Heartbeat)
-
--- case_heartbeat :: Env -> TestTree
--- case_heartbeat _ = testCase "Heartbeats" $
---         runSecureClient "ws-feed.gdax.com" 443 "/" $
---             testClient (mkBTCSub [ChannelHeartbeat]) ["heartbeat"] $ \m -> do
---                 let hb = Aeson.eitherDecode m :: Either String Heartbeat
---                 print hb
---                 assertRight hb
-
-case_ticker :: Env -> TestTree
-case_ticker _ = testCase "Ticker" $
-        runSecureClient "ws-feed.gdax.com" 443 "/" client
-    where
-        client :: ClientApp ()
-        client conn = do
-            sendTextData conn (Aeson.encode testSub)
-
-            m2 <- receiveNotSubs conn
-
-            sendTextData conn (Aeson.encode testUnSub)
-
-            let h1 = Aeson.eitherDecode m2 :: Either String Ticker
-
-            assertRight h1
-
-        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelTicker ["BTC-USD"]]
-        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelTicker ["BTC-USD"]]
-
-case_level2 :: Env -> TestTree
-case_level2 _ = testCase "Level 2" $
-        runSecureClient "ws-feed.gdax.com" 443 "/" client
-    where
-        client :: ClientApp ()
-        client conn = do
-            sendTextData conn (Aeson.encode testSub)
-
-            m1 <- receiveNotSubs conn
-            m2 <- receiveNotSubs conn
-            m3 <- receiveNotSubs conn
-
-            sendTextData conn (Aeson.encode testUnSub)
-
-            let snap = Aeson.eitherDecode m1 :: Either String Level2Snapshot
-                u1 = Aeson.eitherDecode m2 :: Either String Level2Update
-                u2 = Aeson.eitherDecode m3 :: Either String Level2Update
-
-            assertRight snap
-            assertRight u1
-            assertRight u2
-
-        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelLevel2 ["BTC-USD"]]
-        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelLevel2 ["BTC-USD"]]
-
-
-case_matches :: Env -> TestTree
-case_matches _ = testCase "Matches" $
-        runSecureClient "ws-feed.gdax.com" 443 "/" client
-    where
-        client :: ClientApp ()
-        client conn = do
-            sendTextData conn (Aeson.encode testSub)
-
-            m1 <- receiveNotSubs conn
-            m2 <- receiveNotSubs conn
-
-            sendTextData conn (Aeson.encode testUnSub)
-
-            let mt1 = Aeson.eitherDecode m1 :: Either String Match
-                mt2 = Aeson.eitherDecode m2 :: Either String Match
-
-            assertRight mt1
-            assertRight mt2
-
-        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelMatches ["BTC-USD"]]
-        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelMatches ["BTC-USD"]]
-
-case_full :: Env -> TestTree
-case_full _ = testCase "Full" $
-        runSecureClient "ws-feed.gdax.com" 443 "/" client
-    where
-        client :: ClientApp ()
-        client conn = do
-            sendTextData conn (Aeson.encode testSub)
-
-            -- m1 <- receiveNotSubs conn
-            -- m2 <- receiveNotSubs conn
-            m1 <- receiveOfType conn "open"
-
-            -- print m1
-            -- print m2
-
-            sendTextData conn (Aeson.encode testUnSub)
-
-            let mt1 = Aeson.eitherDecode m1 :: Either String Open
-
-            assertRight mt1
-            -- let mt1 = Aeson.eitherDecode m1 :: Either String Match
-            --     mt2 = Aeson.eitherDecode m2 :: Either String Match
-
-            -- assertRight mt1
-            -- assertRight mt2
-
-        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelFull ["BTC-USD"]]
-        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelFull ["BTC-USD"]]
-
 case_sum :: Env -> TestTree
-case_sum _ = testCase "Sum" $
+case_sum _ = testCase "sum" $
         runSecureClient "ws-feed.gdax.com" 443 "/" client
     where
         client :: ClientApp ()
