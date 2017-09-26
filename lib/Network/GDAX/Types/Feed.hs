@@ -452,6 +452,53 @@ instance FromJSON Change where
                 <*> o .: "price"
                 <*> o .: "side"
 
+data MarginProfileUpdate
+    = MarginProfileUpdate
+        { _mpuProductId          :: ProductId
+        , _mpuTime               :: UTCTime
+        , _mpuUserId             :: UserId
+        , _mpuProfileId          :: ProfileId
+        , _mpuNonce              :: Int
+        , _mpuPosition           :: Text
+        , _mpuPositionSize       :: Double
+        , _mpuPositionCompliment :: Double
+        , _mpuPositionMaxSize    :: Double
+        , _mpuCallSide           :: Side
+        , _mpuCallPrice          :: Double
+        , _mpuCallSize           :: Double
+        , _mpuCallFunds          :: Double
+        , _mpuCovered            :: Bool
+        , _mpuNextExpireTime     :: UTCTime
+        , _mpuBaseBalance        :: Double
+        , _mpuBaseFunding        :: Double
+        , _mpuQuoteBalance       :: Double
+        , _mpuQuoteFunding       :: Double
+        , _mpuPrivate            :: Bool
+        }
+
+instance FromJSON MarginProfileUpdate where
+    parseJSON = withObjectOfType "MarginProfileUpdate" "margin_profile_update" $ \o -> MarginProfileUpdate
+        <$> o .: "product_id"
+        <*> o .: "timestamp"
+        <*> o .: "user_id"
+        <*> o .: "profile_id"
+        <*> o .: "nonce"
+        <*> o .: "position"
+        <*> (o .: "position_size" >>= textDouble)
+        <*> (o .: "position_compliement" >>= textDouble)
+        <*> (o .: "position_max_size" >>= textDouble)
+        <*> o .: "call_side"
+        <*> (o .: "call_price" >>= textDouble)
+        <*> (o .: "call_size" >>= textDouble)
+        <*> (o .: "call_funds" >>= textDouble)
+        <*> o .: "covered"
+        <*> o .: "next_expire_time"
+        <*> (o .: "base_balance" >>= textDouble)
+        <*> (o .: "base_funding" >>= textDouble)
+        <*> (o .: "quote_balance" >>= textDouble)
+        <*> (o .: "quote_funding" >>= textDouble)
+        <*> o .: "private"
+
 newtype StopType = StopType { unStopType :: Text }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
 

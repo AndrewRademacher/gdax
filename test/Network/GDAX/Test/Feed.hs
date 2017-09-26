@@ -10,6 +10,7 @@ import           Data.Aeson              (Value (..))
 import qualified Data.Aeson              as Aeson
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy    as LBS
+import qualified Data.Set                as Set
 import           Data.Text               (Text)
 import           Network.GDAX.Test.Types
 import           Network.GDAX.Types.Feed
@@ -46,6 +47,15 @@ case_heartbeat _ = testCase "Heartbeats" $
 
         testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
         testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
+
+testClient :: Subscriptions -> [Text] -> ClientApp ()
+testClient subs types conn = do
+    sendTextData conn (Aeson.encode testSub)
+    receiveOfType types
+    sendTextData conn (Aeson.encode testUnSub)
+    where
+        testSub = Subscribe subs
+        testUnSub =  UnSubscribe subs
 
 case_ticker :: Env -> TestTree
 case_ticker _ = testCase "Ticker" $
@@ -125,7 +135,6 @@ case_full _ = testCase "Full" $
             -- m1 <- receiveNotSubs conn
             -- m2 <- receiveNotSubs conn
             m1 <- receiveOfType conn "open"
-            print m1
 
             -- print m1
             -- print m2
@@ -170,17 +179,24 @@ case_sum _ = testCase "Sum" $
             ]
 
 receiveOfType :: Connection -> Text -> IO LBS.ByteString
-receiveOfType conn t = loop
+receiveOfType conn t = receiveOfTypes conn [t]
+
+receiveOfTypes :: Connection -> [Text] -> IO LBS.ByteString
+receiveOfTypes conn ts = loop
     where
+        tset = Set.fromList ts
         loop = do
             res <- receiveData conn
             let asValue = Aeson.eitherDecode res :: Either String Value
             case asValue of
                 Left er -> fail (show er)
                 Right v ->
-                    if (v ^? key "type") == (Just (String t))
-                        then return res
-                        else loop
+                    case v ^? key "type" of
+                        Nothing -> loop
+                        Just t ->
+                            if Set.member t tset
+                                then return res
+                                else loop
 
 receiveNotSubs :: Connection -> IO LBS.ByteString
 receiveNotSubs conn = loop

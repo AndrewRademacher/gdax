@@ -95,6 +95,7 @@ test-suite test-gdax
                       , aeson
                       , base64-bytestring
                       , bytestring
+                      , containers
                       , exceptions
                       , lens
                       , lens-aeson
