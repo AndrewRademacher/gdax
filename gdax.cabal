@@ -68,6 +68,9 @@ executable sandbox
                       , aeson-pretty
                       , base64-bytestring
                       , bytestring
+                      , text
+                      , websockets
+                      , wuss
 
 test-suite test-gdax
     type:               exitcode-stdio-1.0
