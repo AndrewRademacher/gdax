@@ -5,6 +5,7 @@ module Main where
 import qualified Data.ByteString.Base64       as Base64
 import qualified Data.ByteString.Char8        as CBS
 import           Network.GDAX.Implicit
+import qualified Network.GDAX.Test.Feed       as Feed
 import qualified Network.GDAX.Test.MarketData as MarketData
 import           Network.GDAX.Test.Types
 import           System.Environment
@@ -23,4 +24,5 @@ main = do
 tests :: Env -> TestTree
 tests e = testGroup "Tests"
     [ MarketData.tests e
+    , Feed.tests e
     ]

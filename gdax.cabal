@@ -81,13 +81,15 @@ test-suite test-gdax
 
     ghc-options:        -threaded -Wall
 
-    other-modules:      Network.GDAX.Test.MarketData
+    other-modules:      Network.GDAX.Test.Feed
+                        Network.GDAX.Test.MarketData
                         Network.GDAX.Test.Types
 
     build-depends:      base            >4 && < 6
 
                       , gdax
 
+                      , aeson
                       , base64-bytestring
                       , bytestring
                       , exceptions
@@ -98,3 +100,5 @@ test-suite test-gdax
                       , tasty-quickcheck
                       , tasty-hunit
                       , time
+                      , websockets
+                      , wuss
