@@ -16,7 +16,7 @@ import           Data.Vector
 import qualified Data.Vector.Generic           as V
 import           GHC.Generics
 import           Network.GDAX.Parsers
-import           Network.GDAX.Types.MarketData
+import           Network.GDAX.Types.MarketData hiding (Open)
 
 data Subscriptions
     = Subscriptions
@@ -235,6 +235,7 @@ instance FromJSON Level2Change where
 data Match
     = Match
         { _matchTradeId      :: TradeId
+        , _matchTime         :: Maybe UTCTime
         , _matchMakerOrderId :: UUID
         , _matchTakerOrderId :: UUID
         , _matchProductId    :: ProductId
@@ -255,6 +256,7 @@ instance FromJSON Match where
         where
             process o = Match
                 <$> o .: "trade_id"
+                <*> o .:? "time"
                 <*> o .: "maker_order_id"
                 <*> o .: "taker_order_id"
                 <*> o .: "product_id"
@@ -264,6 +266,19 @@ instance FromJSON Match where
                 <*> (o .: "price" >>= textDouble)
 
 -- Full Book Messages
+
+newtype UserId = UserId { unUserId :: Text }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show UserId where
+    show = show . unUserId
+
+newtype ProfileId = ProfileId { unProfileId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show ProfileId where
+    show = show . unProfileId
+
 
 newtype OrderId = OrderId { unOrderId :: UUID }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
@@ -326,6 +341,152 @@ instance FromJSON Received where
                 <*> o .: "order_id"
                 <*> (o .: "funds" >>= textDouble)
                 <*> o .: "side"
+
+data Reason
+    = ReasonFilled
+    | ReasonCanceled
+    deriving (Eq, Ord, Typeable, Generic)
+
+instance Show Reason where
+    show ReasonFilled   = "filled"
+    show ReasonCanceled = "canceled"
+
+instance FromJSON Reason where
+    parseJSON = withText "Reason" $ \t ->
+        case t of
+            "filled"   -> pure ReasonFilled
+            "canceled" -> pure ReasonCanceled
+            _          -> fail $ T.unpack $ "'" <> t <> "' is not a valid reason."
+
+data Open
+    = Open
+        { _openTime      :: UTCTime
+        , _openProductId :: ProductId
+        , _openSequence  :: Sequence
+        , _openPrice     :: Double
+        , _openOrderId   :: OrderId
+        , _openReason    :: Reason
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Open where
+    parseJSON = withObjectOfType "Open" "open" $ \o -> Open
+        <$> o .: "time"
+        <*> o .: "product_id"
+        <*> o .: "sequence"
+        <*> (o .: "price" >>= textDouble)
+        <*> o .: "order_id"
+        <*> o .: "reason"
+
+data Done
+    = Done
+        { _doneTime          :: UTCTime
+        , _doneProductId     :: ProductId
+        , _doneSequence      :: Sequence
+        , _donePrice         :: Double
+        , _doneOrderId       :: OrderId
+        , _doneReason        :: Reason
+        , _doneSide          :: Side
+        , _doneRemainingSize :: Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Done where
+    parseJSON = withObjectOfType "Done" "done" $ \o -> Done
+        <$> o .: "time"
+        <*> o .: "product_id"
+        <*> o .: "sequence"
+        <*> o .: "price"
+        <*> o .: "order_id"
+        <*> o .: "reason"
+        <*> o .: "side"
+        <*> o .: "remaining_size"
+
+-- Match implemented previously
+
+data Change
+    = ChangeSize
+        { _changeTime      :: UTCTime
+        , _changeSequence  :: Sequence
+        , _changeOrderId   :: OrderId
+        , _changeProductId :: ProductId
+        , _changeNewSize   :: Double
+        , _changeOldSize   :: Double
+        , _changePrice     :: Double
+        , _changSide       :: Side
+        }
+    | ChangeFunds
+        { _changeTime      :: UTCTime
+        , _changeSequence  :: Sequence
+        , _changeOrderId   :: OrderId
+        , _changeProductId :: ProductId
+        , _changeNewFunds  :: Double
+        , _changeOldFunds  :: Double
+        , _changePrice     :: Double
+        , _changSide       :: Side
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Change where
+    parseJSON = withObjectOfType "Change" "change" $ \o -> do
+        fund <- o .:? "new_funds"
+        case (fund :: Maybe Double) of
+            Nothing -> ChangeSize
+                <$> o .: "time"
+                <*> o .: "sequence"
+                <*> o .: "order_id"
+                <*> o .: "product_id"
+                <*> o .: "new_size"
+                <*> o .: "old_size"
+                <*> o .: "price"
+                <*> o .: "side"
+            Just _ -> ChangeFunds
+                <$> o .: "time"
+                <*> o .: "sequence"
+                <*> o .: "order_id"
+                <*> o .: "product_id"
+                <*> o .: "new_funds"
+                <*> o .: "old_funds"
+                <*> o .: "price"
+                <*> o .: "side"
+
+newtype StopType = StopType { unStopType :: Text }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show StopType where
+    show = show . unStopType
+
+data Activate
+    = Activate
+        { _activateProductId    :: ProductId
+        , _activateTime         :: UTCTime
+        , _activateUserId       :: UserId
+        , _activateProfileId    :: ProfileId
+        , _activateOrderId      :: OrderId
+        , _activateStopType     :: StopType
+        , _activateSide         :: Side
+        , _activateStopPrice    :: Double
+        , _activateSize         :: Double
+        , _activateFunds        :: Double
+        , _activateTakerFeeRate :: Double
+        , _activatePrivate      :: Bool
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Activate where
+    parseJSON = withObjectOfType "Activate" "activate" $ \o -> Activate
+        <$> o .: "product_id"
+        <*> o .: "time"
+        <*> o .: "user_id"
+        <*> o .: "profile_id"
+        <*> o .: "order_id"
+        <*> o .: "stop_type"
+        <*> o .: "side"
+        <*> (o .: "stop_price" >>= textDouble)
+        <*> (o .: "size" >>= textDouble)
+        <*> (o .: "funds" >>= textDouble)
+        <*> (o .: "taker_fee_rate" >>= textDouble)
+        <*> o .: "private"
 
 -- Sum Type
 
