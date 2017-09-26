@@ -29,6 +29,7 @@ library
                        Network.GDAX.Core
                        Network.GDAX.Exceptions
                        Network.GDAX.Explicit
+                       Network.GDAX.Feed
                        Network.GDAX.Implicit
                        Network.GDAX.Parsers
                        Network.GDAX
@@ -52,7 +53,9 @@ library
                      , time
                      , uuid
                      , vector
+                     , websockets
                      , wreq
+                     , wuss
 
 executable sandbox
     main-is:            Sandbox.hs

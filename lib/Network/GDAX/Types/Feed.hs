@@ -260,3 +260,18 @@ instance FromJSON Match where
                 <*> o .: "side"
                 <*> (o .: "size" >>= textDouble)
                 <*> (o .: "price" >>= textDouble)
+
+-- Sum Type
+
+data GdaxMessage
+    = GdaxSubscriptions Subscriptions
+    | GdaxHeartbeat Heartbeat
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON GdaxMessage where
+    parseJSON = withObject "GdaxMessage" $ \o -> do
+        t <- o .: "type"
+        case t of
+            "subscriptions" -> GdaxSubscriptions <$> parseJSON (Object o)
+            "heartbeat" -> GdaxHeartbeat <$> parseJSON (Object o)
+            _ -> fail $ T.unpack $ "Message of unsupported type '" <> t <> "'."

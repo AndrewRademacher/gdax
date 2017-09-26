@@ -61,5 +61,5 @@ getTime :: (MonadIO m, MonadThrow m) => Gdax -> m UTCTime
 getTime g = do
     res <- gdaxGet g "/time"
     case (res :: Value) ^? key "epoch" . _Double of
-        Nothing  -> throwM $ MalformedGDAXResponse "Epoch field was either missing or malformed in response from GET /time."
+        Nothing  -> throwM $ MalformedGdaxResponse "Epoch field was either missing or malformed in response from GET /time."
         Just val -> return $ posixSecondsToUTCTime $ realToFrac val

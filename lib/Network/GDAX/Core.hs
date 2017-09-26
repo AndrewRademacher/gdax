@@ -159,7 +159,7 @@ decodeResult :: (MonadThrow m, FromJSON a) => Response CLBS.ByteString -> m a
 {-# INLINE decodeResult #-}
 decodeResult res =
     case Aeson.eitherDecode' (res ^. responseBody) of
-        Left err  -> throwM $ MalformedGDAXResponse (T.pack err)
+        Left err  -> throwM $ MalformedGdaxResponse (T.pack err)
         Right val -> return val
 
 signOptions :: (MonadIO m) => Gdax -> Method -> Path -> (Maybe ByteString) -> Options -> m Options
