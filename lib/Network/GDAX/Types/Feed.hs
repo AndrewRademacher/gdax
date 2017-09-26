@@ -360,12 +360,13 @@ instance FromJSON Reason where
 
 data Open
     = Open
-        { _openTime      :: UTCTime
-        , _openProductId :: ProductId
-        , _openSequence  :: Sequence
-        , _openPrice     :: Double
-        , _openOrderId   :: OrderId
-        , _openReason    :: Reason
+        { _openTime          :: UTCTime
+        , _openProductId     :: ProductId
+        , _openOrderId       :: OrderId
+        , _openSequence      :: Sequence
+        , _openPrice         :: Double
+        , _openRemainingSize :: Double
+        , _openSide          :: Side
         }
     deriving (Show, Typeable, Generic)
 
@@ -373,10 +374,11 @@ instance FromJSON Open where
     parseJSON = withObjectOfType "Open" "open" $ \o -> Open
         <$> o .: "time"
         <*> o .: "product_id"
+        <*> o .: "order_id"
         <*> o .: "sequence"
         <*> (o .: "price" >>= textDouble)
-        <*> o .: "order_id"
-        <*> o .: "reason"
+        <*> (o .: "remaining_size" >>= textDouble)
+        <*> o .: "side"
 
 data Done
     = Done

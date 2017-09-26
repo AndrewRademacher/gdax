@@ -10,6 +10,7 @@ import           Data.Aeson              (Value (..))
 import qualified Data.Aeson              as Aeson
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy    as LBS
+import           Data.Text               (Text)
 import           Network.GDAX.Test.Types
 import           Network.GDAX.Types.Feed
 import           Network.WebSockets
@@ -121,14 +122,19 @@ case_full _ = testCase "Full" $
         client conn = do
             sendTextData conn (Aeson.encode testSub)
 
-            m1 <- receiveNotSubs conn
-            m2 <- receiveNotSubs conn
-
+            -- m1 <- receiveNotSubs conn
+            -- m2 <- receiveNotSubs conn
+            m1 <- receiveOfType conn "open"
             print m1
-            print m2
+
+            -- print m1
+            -- print m2
 
             sendTextData conn (Aeson.encode testUnSub)
 
+            let mt1 = Aeson.eitherDecode m1 :: Either String Open
+
+            assertRight mt1
             -- let mt1 = Aeson.eitherDecode m1 :: Either String Match
             --     mt2 = Aeson.eitherDecode m2 :: Either String Match
 
@@ -162,6 +168,19 @@ case_sum _ = testCase "Sum" $
             , ChannelSubscription ChannelLevel2 ["BTC-USD"]
             , ChannelSubscription ChannelMatches ["BTC-USD"]
             ]
+
+receiveOfType :: Connection -> Text -> IO LBS.ByteString
+receiveOfType conn t = loop
+    where
+        loop = do
+            res <- receiveData conn
+            let asValue = Aeson.eitherDecode res :: Either String Value
+            case asValue of
+                Left er -> fail (show er)
+                Right v ->
+                    if (v ^? key "type") == (Just (String t))
+                        then return res
+                        else loop
 
 receiveNotSubs :: Connection -> IO LBS.ByteString
 receiveNotSubs conn = loop
