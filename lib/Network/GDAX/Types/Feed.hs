@@ -87,3 +87,15 @@ instance FromJSON ChannelSubscription where
         <$> o .: "name"
         <*> o .: "product_ids"
     parseJSON _ = fail "Channel subscription was not a String or Object."
+
+data FeedError
+    = FeedError
+        { _errMessage  :: Text
+        , _errOriginal :: Value
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON FeedError where
+    parseJSON = withObjectOfType "FeedError" "error" $ \o -> FeedError
+        <$> o .: "message"
+        <*> o .: "original"

@@ -43,7 +43,10 @@ testSub = Subscribe [] [ChannelSubscription Full ["BTC-USD"]]
 client :: ClientApp ()
 client conn = do
     putStrLn "Connection opened.."
-    sendTextData conn (Aeson.encode testSub)
+    sendBinaryData conn (Aeson.encode testSub)
+    -- sendTextData conn (Aeson.encode testSub)
     void . forever $ do
         msg <- receiveData conn
-        print (msg :: Text)
+        let err = Aeson.decode msg :: Maybe FeedError
+        print err
+        -- print (msg :: Text)
