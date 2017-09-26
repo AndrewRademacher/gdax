@@ -2,7 +2,6 @@
 
 module Main where
 
-import           Control.Concurrent
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.Aeson                 (Value)
@@ -11,7 +10,6 @@ import qualified Data.ByteString.Base64     as Base64
 import qualified Data.ByteString.Char8      as CBS
 import qualified Data.ByteString.Lazy.Char8 as CLBS
 import           Data.Text                  (Text)
-import qualified Data.Text                  as T
 import           Network.GDAX.Explicit
 import           Network.WebSockets
 import           System.Environment
