@@ -16,6 +16,7 @@ import           Wuss
 tests :: Env -> TestTree
 tests e = testGroup "Feed Parse"
     [ case_heartbeat e
+    , case_ticker e
     ]
 
 case_heartbeat :: Env -> TestTree
@@ -39,6 +40,28 @@ case_heartbeat _ = testCase "Heartbeats" $
 
         testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
         testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
+
+case_ticker :: Env -> TestTree
+case_ticker _ = testCase "Ticker" $
+        runSecureClient "ws-feed.gdax.com" 443 "/" client
+    where
+        client :: ClientApp ()
+        client conn = do
+            sendTextData conn (Aeson.encode testSub)
+
+            -- m1 <- receiveData conn
+            m2 <- receiveData conn
+
+            sendTextData conn (Aeson.encode testUnSub)
+
+            -- let subs = Aeson.eitherDecode m1 :: Either String Subscriptions
+            let h1 = Aeson.eitherDecode m2 :: Either String Ticker
+
+            -- assertRight subs
+            assertRight h1
+
+        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelTicker ["BTC-USD"]]
+        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelTicker ["BTC-USD"]]
 
 assertRight :: (Show e) => Either e a -> IO ()
 assertRight (Right _) = return ()

@@ -149,3 +149,31 @@ instance FromJSON Heartbeat where
         <*> o .: "last_trade_id"
         <*> o .: "product_id"
         <*> o .: "time"
+
+data Ticker
+    = Ticker
+        { _tickerSequence      :: Sequence
+        , _tickerProductId     :: ProductId
+        , _tickerPrice         :: Double
+        , _tickerOpen24Hours   :: Double
+        , _tickerVolume24Hours :: Double
+        , _tickerLow24Hours    :: Double
+        , _tickerHigh24Hours   :: Double
+        , _tickerVolume30Days  :: Double
+        , _tickerBestBid       :: Double
+        , _tickerBestAsk       :: Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Ticker where
+    parseJSON = withObjectOfType "Ticker" "ticker" $ \o -> Ticker
+        <$> o .: "sequence"
+        <*> o .: "product_id"
+        <*> (o .: "price" >>= textDouble)
+        <*> (o .: "open_24h" >>= textDouble)
+        <*> (o .: "volume_24h" >>= textDouble)
+        <*> (o .: "low_24h" >>= textDouble)
+        <*> (o .: "high_24h" >>= textDouble)
+        <*> (o .: "volume_30d" >>= textDouble)
+        <*> (o .: "best_bid" >>= textDouble)
+        <*> (o .: "best_ask" >>= textDouble)
