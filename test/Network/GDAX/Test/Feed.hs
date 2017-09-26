@@ -6,12 +6,15 @@ module Network.GDAX.Test.Feed
     ) where
 
 import           Control.Lens
+import           Data.Aeson                    (FromJSON (..))
 import           Data.Aeson                    (Value (..))
 import qualified Data.Aeson                    as Aeson
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy          as LBS
+import           Data.Proxy
 import qualified Data.Set                      as Set
 import           Data.Text                     (Text)
+import qualified Data.Text                     as T
 import           Data.Vector                   (Vector)
 import           Network.GDAX.Test.Types
 import           Network.GDAX.Types.Feed
@@ -31,6 +34,9 @@ tests e = testGroup "Feed Parse"
     , case_sum e
     ]
 
+mkBTCSub :: Vector Channel -> Subscriptions
+mkBTCSub = mkSubscriptions "BTC-USD"
+
 mkSubscriptions :: ProductId -> Vector Channel -> Subscriptions
 mkSubscriptions pid cs = Subscriptions [] $ fmap fn cs
     where
@@ -46,13 +52,34 @@ testClient subs types handler conn = do
         testSub = Subscribe subs
         testUnSub =  UnSubscribe subs
 
+parseTestClient :: (FromJSON a) => Subscriptions -> Text -> Proxy a -> TestTree
+parseTestClient subs t pt = testCase (T.unpack t) $ runSecureClient "ws-feed.gdax.com" 443 "/" $ \conn -> do
+    sendTextData conn (Aeson.encode testSub)
+    -- m1 <- receiveOfTypes conn types
+    -- handler m1
+    m1 <- receiveOfType conn t
+    let res = Aeson.eitherDecode m1
+    case res of
+        Left er -> fail (show er)
+        Right v ->
+            let final = asProxyTypeOf v pt
+            in return ()
+
+    sendTextData conn (Aeson.encode testUnSub)
+    where
+        testSub = Subscribe subs
+        testUnSub =  UnSubscribe subs
+
 case_heartbeat :: Env -> TestTree
-case_heartbeat _ = testCase "Heartbeats" $
-        runSecureClient "ws-feed.gdax.com" 443 "/" $
-            testClient (mkSubscriptions "BTC-USD" [ChannelHeartbeat]) ["heartbeat"] $ \m -> do
-                let hb = Aeson.eitherDecode m :: Either String Heartbeat
-                print hb
-                assertRight hb
+case_heartbeat _ = parseTestClient (mkBTCSub [ChannelHeartbeat]) "heartbeat" (Proxy :: Proxy Heartbeat)
+
+-- case_heartbeat :: Env -> TestTree
+-- case_heartbeat _ = testCase "Heartbeats" $
+--         runSecureClient "ws-feed.gdax.com" 443 "/" $
+--             testClient (mkBTCSub [ChannelHeartbeat]) ["heartbeat"] $ \m -> do
+--                 let hb = Aeson.eitherDecode m :: Either String Heartbeat
+--                 print hb
+--                 assertRight hb
 
 case_ticker :: Env -> TestTree
 case_ticker _ = testCase "Ticker" $
