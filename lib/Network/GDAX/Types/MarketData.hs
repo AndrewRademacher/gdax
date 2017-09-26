@@ -152,7 +152,7 @@ instance FromJSON Tick where
         <*> (o .: "size" >>= textDouble)
         <*> (o .: "bid" >>= textDouble)
         <*> (o .: "ask" >>= textDouble)
-        <*> o .: "volume"
+        <*> (o .: "volume" >>= textDouble)
         <*> o .: "time"
 
 -- Trade
