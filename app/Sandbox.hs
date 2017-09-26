@@ -34,21 +34,12 @@ printPrettyLn :: (MonadIO m) => Value -> m ()
 printPrettyLn = liftIO . CLBS.putStrLn . encodePretty
 
 subscribeSocket :: IO ()
-subscribeSocket = runSecureClient "echo.websocket.org" 443 "/" ws
+subscribeSocket = runSecureClient "ws-feed.gdax.com" 443 "/" client
 
-ws :: ClientApp ()
-ws connection = do
-    putStrLn "Connected."
-
-    void . forkIO . forever $ do
-        msg <- receiveData connection
+client :: ClientApp ()
+client conn = do
+    putStrLn "Connection opened.."
+    sendTextData conn ("{\"type\":\"subscribe\",\"channels\":[{\"name\":\"full\",\"product_ids\":[\"BTC-USD\"]}]}" :: Text)
+    void . forever $ do
+        msg <- receiveData conn
         print (msg :: Text)
-
-    let loop = do
-            line <- getLine
-            unless (null line) $ do
-                sendTextData connection (T.pack line)
-                loop
-    loop
-
-    sendClose connection (T.pack "Bye!")
