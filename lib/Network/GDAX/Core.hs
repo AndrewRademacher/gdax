@@ -10,7 +10,7 @@ module Network.GDAX.Core
     , Gdax
 
     , HasGdax (..)
-    , HasManager (..)
+    , HasNetworkManager (..)
     , HasEndpoint (..)
     , HasAccessKey (..)
     , HasSecretKey (..)
@@ -60,8 +60,8 @@ live = "https://api.gdax.com"
 sandbox :: Endpoint
 sandbox = "https://api-public.sandbox.gdax.com"
 
-class HasManager a where
-    manager :: Lens' a Manager
+class HasNetworkManager a where
+    networkManager :: Lens' a Manager
 class HasEndpoint a where
     endpoint :: Lens' a Endpoint
 class HasAccessKey a where
@@ -73,16 +73,16 @@ class HasPassphrase a where
 
 data Gdax
     = Gdax
-        { _gdaxManager    :: Manager
-        , _gdaxEndpoint   :: Endpoint
-        , _gdaxAccessKey  :: AccessKey
-        , _gdaxSecretKey  :: SecretKey
-        , _gdaxPassphrase :: Passphrase
+        { _gdaxNetworkManager :: Manager
+        , _gdaxEndpoint       :: Endpoint
+        , _gdaxAccessKey      :: AccessKey
+        , _gdaxSecretKey      :: SecretKey
+        , _gdaxPassphrase     :: Passphrase
         }
 
 $(makeClassy ''Gdax)
 
-instance HasManager Gdax where manager = gdaxManager
+instance HasNetworkManager Gdax where networkManager = gdaxNetworkManager
 instance HasEndpoint Gdax where endpoint = gdaxEndpoint
 instance HasAccessKey Gdax where accessKey = gdaxAccessKey
 instance HasSecretKey Gdax where secretKey = gdaxSecretKey
@@ -110,19 +110,25 @@ mkSandboxUnsignedGdax = do
 
 gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 gdaxGet g path = do
-    res <- liftIO $ get (g ^. endpoint <> path)
-    decodeResult res
-
-gdaxGetWith :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> Options -> m b
-gdaxGetWith g path opts = do
     res <- liftIO $ getWith opts (g ^. endpoint <> path)
     decodeResult res
+    where
+        opts = defaults & manager .~ Right (g ^. networkManager)
+
+gdaxGetWith :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> Options -> m b
+gdaxGetWith g path opts' = do
+    res <- liftIO $ getWith opts (g ^. endpoint <> path)
+    decodeResult res
+    where
+        opts = opts' & manager .~ Right (g ^. networkManager)
 
 gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
 gdaxSignedGet g path = do
-    signedOpts <- signOptions g "GET" path Nothing defaults
+    signedOpts <- signOptions g "GET" path Nothing opts
     res <- liftIO $ getWith signedOpts (g ^. endpoint <> path)
     decodeResult res
+    where
+        opts = defaults & manager .~ Right (g ^. networkManager)
 
 gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Path -> a -> m b
 gdaxSignedPost g path body = do
@@ -131,6 +137,7 @@ gdaxSignedPost g path body = do
     decodeResult res
     where
         opts = defaults & header "Content-Type" .~ [ "application/json" ]
+                        & manager .~ Right (g ^. networkManager)
         bodyBS = CLBS.toStrict $ Aeson.encode body
 
 decodeResult :: (MonadThrow m, FromJSON a) => Response CLBS.ByteString -> m a
