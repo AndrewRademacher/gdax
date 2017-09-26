@@ -7,6 +7,7 @@ import           Data.Monoid
 import           Data.Scientific
 import           Data.Text           (Text)
 import qualified Data.Text           as T
+import           Data.Vector         (Vector)
 import qualified Data.Vector.Generic as V
 import           Text.Read
 
@@ -42,3 +43,7 @@ withObjectOfType name type' fn = withObject name $ \o -> do
     if t == type'
         then fn o
         else fail $ T.unpack $ "Expected type 'subscribe' got '" <> t <> "'."
+
+nothingToEmptyVector :: Maybe (Vector a) -> Vector a
+nothingToEmptyVector (Just v) = v
+nothingToEmptyVector Nothing  = V.empty

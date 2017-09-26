@@ -8,6 +8,7 @@ import           Data.Aeson
 import           Data.Monoid
 import           Data.Text                     (Text)
 import qualified Data.Text                     as T
+import           Data.Time
 import           Data.Typeable
 import           Data.Vector
 import qualified Data.Vector.Generic           as V
@@ -15,15 +16,19 @@ import           GHC.Generics
 import           Network.GDAX.Parsers
 import           Network.GDAX.Types.MarketData
 
-data Subscription
-    = Subscription
+data Subscriptions
+    = Subscriptions
         { _subProducts :: Vector ProductId
         , _subChannels :: Vector ChannelSubscription
         }
     deriving (Show, Typeable, Generic)
 
+instance FromJSON Subscriptions where
+    parseJSON = withObjectOfType "Subscriptions" "subscriptions" $ \o -> Subscriptions
+        <$> (nothingToEmptyVector <$> o .:? "products")
+        <*> o .: "channels"
 
-newtype Subscribe = Subscribe { unSubscribe :: Subscription }
+newtype Subscribe = Subscribe { unSubscribe :: Subscriptions }
     deriving (Show, Typeable, Generic)
 
 instance ToJSON Subscribe where
@@ -38,12 +43,12 @@ instance FromJSON Subscribe where
         t <- o .: "type"
         case t of
             "subscribe" -> do
-                prod <- o .: "products"
+                prod <- nothingToEmptyVector <$>  o .:? "products"
                 chan <- o .: "channels"
-                return $ Subscribe $ Subscription prod chan
+                return $ Subscribe $ Subscriptions prod chan
             _ -> fail $ T.unpack $ "Expected type 'subscribe' got '" <> t <> "'."
 
-newtype UnSubscribe = UnSubscribe { unUnSubscribe :: Subscription }
+newtype UnSubscribe = UnSubscribe { unUnSubscribe :: Subscriptions }
     deriving (Show, Typeable, Generic)
 
 instance ToJSON UnSubscribe where
@@ -58,27 +63,27 @@ instance FromJSON UnSubscribe where
         t <- o .: "type"
         case t of
             "subscribe" -> do
-                prod <- o .: "products"
+                prod <- nothingToEmptyVector <$> o .:? "products"
                 chan <- o .: "channels"
-                return $ UnSubscribe $ Subscription prod chan
+                return $ UnSubscribe $ Subscriptions prod chan
             _ -> fail $ T.unpack $ "Expected type 'subscribe' got '" <> t <> "'."
 
 data Channel
-    = Heartbeat
-    | Ticker
-    | Level2
-    | User
-    | Matches
-    | Full
+    = ChannelHeartbeat
+    | ChannelTicker
+    | ChannelLevel2
+    | ChannelUser
+    | ChannelMatches
+    | ChannelFull
     deriving (Eq, Ord, Typeable, Generic)
 
 instance Show Channel where
-    show Heartbeat = "heartbeat"
-    show Ticker    = "ticker"
-    show Level2    = "level2"
-    show User      = "user"
-    show Matches   = "matches"
-    show Full      = "full"
+    show ChannelHeartbeat = "heartbeat"
+    show ChannelTicker    = "ticker"
+    show ChannelLevel2    = "level2"
+    show ChannelUser      = "user"
+    show ChannelMatches   = "matches"
+    show ChannelFull      = "full"
 
 instance ToJSON Channel where
     toJSON = String . T.pack . show
@@ -86,12 +91,12 @@ instance ToJSON Channel where
 instance FromJSON Channel where
     parseJSON = withText "Channel" $ \t ->
         case t of
-            "heartbeat" -> pure Heartbeat
-            "ticker"    -> pure Ticker
-            "level2"    -> pure Level2
-            "user"      -> pure User
-            "matches"   -> pure Matches
-            "full"      -> pure Full
+            "heartbeat" -> pure ChannelHeartbeat
+            "ticker"    -> pure ChannelTicker
+            "level2"    -> pure ChannelLevel2
+            "user"      -> pure ChannelUser
+            "matches"   -> pure ChannelMatches
+            "full"      -> pure ChannelFull
             u -> fail $ T.unpack $ "Received from unsupported channel '" <> u <> "'."
 
 data ChannelSubscription
@@ -128,3 +133,19 @@ instance FromJSON FeedError where
     parseJSON = withObjectOfType "FeedError" "error" $ \o -> FeedError
         <$> o .: "message"
         <*> o .: "original"
+
+data Heartbeat
+    = Heartbeat
+        { _beatSequence    :: Sequence
+        , _beatLastTradeId :: TradeId
+        , _beatProductId   :: ProductId
+        , _beatTime        :: UTCTime
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Heartbeat where
+    parseJSON = withObjectOfType "Heartbeat" "heartbeat" $ \o -> Heartbeat
+        <$> o .: "sequence"
+        <*> o .: "last_trade_id"
+        <*> o .: "product_id"
+        <*> o .: "time"

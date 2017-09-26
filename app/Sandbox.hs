@@ -12,7 +12,6 @@ import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Base64     as Base64
 import qualified Data.ByteString.Char8      as CBS
 import qualified Data.ByteString.Lazy.Char8 as CLBS
-import           Data.Text                  (Text)
 import           Network.GDAX.Explicit
 import           Network.GDAX.Types.Feed
 import           Network.WebSockets
@@ -39,10 +38,10 @@ subscribeSocket :: IO ()
 subscribeSocket = runSecureClient "ws-feed.gdax.com" 443 "/" client
 
 testSub :: Subscribe
-testSub = Subscribe $ Subscription [] [ChannelSubscription Full ["BTC-USD"]]
+testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
 
 testUnSub :: UnSubscribe
-testUnSub =  UnSubscribe $ Subscription [] [ChannelSubscription Full ["BTC-USD"]]
+testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
 
 client :: ClientApp ()
 client conn = do
@@ -51,7 +50,14 @@ client conn = do
     sendTextData conn (Aeson.encode testSub)
     void . forkIO . forever $ do
         msg <- receiveData conn
-        print (msg :: Text)
+        let hbeat = Aeson.decode msg :: Maybe Heartbeat
+        case hbeat of
+            Nothing ->
+                let subs = Aeson.decode msg :: Maybe Subscriptions
+                in case subs of
+                    Nothing -> print ("not sub"::String) >> print msg
+                    Just v  -> print v
+            Just v  -> print v
 
     threadDelay 1000000
 
