@@ -109,6 +109,7 @@ mkSandboxUnsignedGdax = do
     return $ Gdax m sandbox "" "" ""
 
 gdaxGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
+{-# INLINE gdaxGet #-}
 gdaxGet g path = do
     res <- liftIO $ getWith opts (g ^. endpoint <> path)
     decodeResult res
@@ -116,6 +117,7 @@ gdaxGet g path = do
         opts = defaults & manager .~ Right (g ^. networkManager)
 
 gdaxGetWith :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> Options -> m b
+{-# INLINE gdaxGetWith #-}
 gdaxGetWith g path opts' = do
     res <- liftIO $ getWith opts (g ^. endpoint <> path)
     decodeResult res
@@ -123,6 +125,7 @@ gdaxGetWith g path opts' = do
         opts = opts' & manager .~ Right (g ^. networkManager)
 
 gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
+{-# INLINE gdaxSignedGet #-}
 gdaxSignedGet g path = do
     signedOpts <- signOptions g "GET" path Nothing opts
     res <- liftIO $ getWith signedOpts (g ^. endpoint <> path)
@@ -131,6 +134,7 @@ gdaxSignedGet g path = do
         opts = defaults & manager .~ Right (g ^. networkManager)
 
 gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Path -> a -> m b
+{-# INLINE gdaxSignedPost #-}
 gdaxSignedPost g path body = do
     signedOpts <- signOptions g "POST" path (Just bodyBS) opts
     res <- liftIO $ postWith signedOpts (g ^. endpoint <> path) bodyBS
@@ -141,12 +145,14 @@ gdaxSignedPost g path body = do
         bodyBS = CLBS.toStrict $ Aeson.encode body
 
 decodeResult :: (MonadThrow m, FromJSON a) => Response CLBS.ByteString -> m a
+{-# INLINE decodeResult #-}
 decodeResult res =
     case Aeson.eitherDecode' (res ^. responseBody) of
         Left err  -> throwM $ MalformedGDAXResponse (T.pack err)
         Right val -> return val
 
 signOptions :: (MonadIO m) => Gdax -> Method -> Path -> (Maybe ByteString) -> Options -> m Options
+{-# INLINE signOptions #-}
 signOptions g method path mBody opts = do
     time <- liftIO $ getCurrentTime
     let timestamp = CBS.pack $ printf "%.0f" (realToFrac (utcTimeToPOSIXSeconds time) :: Double)
