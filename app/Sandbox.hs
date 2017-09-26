@@ -3,6 +3,7 @@
 
 module Main where
 
+import           Control.Concurrent
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.Aeson                 (Value)
@@ -38,15 +39,24 @@ subscribeSocket :: IO ()
 subscribeSocket = runSecureClient "ws-feed.gdax.com" 443 "/" client
 
 testSub :: Subscribe
-testSub = Subscribe [] [ChannelSubscription Full ["BTC-USD"]]
+testSub = Subscribe $ Subscription [] [ChannelSubscription Full ["BTC-USD"]]
+
+testUnSub :: UnSubscribe
+testUnSub =  UnSubscribe $ Subscription [] [ChannelSubscription Full ["BTC-USD"]]
 
 client :: ClientApp ()
 client conn = do
     putStrLn "Connection opened.."
-    sendBinaryData conn (Aeson.encode testSub)
-    -- sendTextData conn (Aeson.encode testSub)
-    void . forever $ do
+
+    sendTextData conn (Aeson.encode testSub)
+    void . forkIO . forever $ do
         msg <- receiveData conn
-        let err = Aeson.decode msg :: Maybe FeedError
-        print err
-        -- print (msg :: Text)
+        print (msg :: Text)
+
+    threadDelay 1000000
+
+    putStrLn "Unsubscribing..."
+    sendTextData conn (Aeson.encode testUnSub)
+
+    threadDelay 1000000
+    putStrLn "Closing..."

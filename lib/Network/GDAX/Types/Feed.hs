@@ -15,24 +15,53 @@ import           GHC.Generics
 import           Network.GDAX.Parsers
 import           Network.GDAX.Types.MarketData
 
-data Subscribe
-    = Subscribe
+data Subscription
+    = Subscription
         { _subProducts :: Vector ProductId
         , _subChannels :: Vector ChannelSubscription
         }
     deriving (Show, Typeable, Generic)
 
+
+newtype Subscribe = Subscribe { unSubscribe :: Subscription }
+    deriving (Show, Typeable, Generic)
+
 instance ToJSON Subscribe where
-    toJSON s = object
+    toJSON (Subscribe s) = object
         [ "type" .= ("subscribe"::Text)
         , "product_ids" .= _subProducts s
         , "channels" .= _subChannels s
         ]
 
 instance FromJSON Subscribe where
-    parseJSON = withObjectOfType "Subscribe" "subscribe" $ \o -> Subscribe
-        <$> o .: "product_ids"
-        <*> o .: "channels"
+    parseJSON = withObject "Subscribe" $ \o -> do
+        t <- o .: "type"
+        case t of
+            "subscribe" -> do
+                prod <- o .: "products"
+                chan <- o .: "channels"
+                return $ Subscribe $ Subscription prod chan
+            _ -> fail $ T.unpack $ "Expected type 'subscribe' got '" <> t <> "'."
+
+newtype UnSubscribe = UnSubscribe { unUnSubscribe :: Subscription }
+    deriving (Show, Typeable, Generic)
+
+instance ToJSON UnSubscribe where
+    toJSON (UnSubscribe s) = object
+        [ "type" .= ("unsubscribe"::Text)
+        , "product_ids" .= _subProducts s
+        , "channels" .= _subChannels s
+        ]
+
+instance FromJSON UnSubscribe where
+    parseJSON = withObject "UnSubscribe" $ \o -> do
+        t <- o .: "type"
+        case t of
+            "subscribe" -> do
+                prod <- o .: "products"
+                chan <- o .: "channels"
+                return $ UnSubscribe $ Subscription prod chan
+            _ -> fail $ T.unpack $ "Expected type 'subscribe' got '" <> t <> "'."
 
 data Channel
     = Heartbeat
