@@ -1,6 +1,7 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings          #-}
 
 module Network.GDAX.Types.Feed where
 
@@ -261,6 +262,70 @@ instance FromJSON Match where
                 <*> o .: "side"
                 <*> (o .: "size" >>= textDouble)
                 <*> (o .: "price" >>= textDouble)
+
+-- Full Book Messages
+
+newtype OrderId = OrderId { unOrderId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show OrderId where
+    show = show . unOrderId
+
+data OrderType
+    = OrderLimit
+    | OrderMarket
+    deriving (Typeable, Generic)
+
+instance Show OrderType where
+    show OrderLimit  = "limit"
+    show OrderMarket = "market"
+
+instance FromJSON OrderType where
+    parseJSON = withText "OrderType" $ \t ->
+        case t of
+            "limit"  -> pure OrderLimit
+            "market" -> pure OrderMarket
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid order type."
+
+data Received
+    = ReceivedLimit
+        { _receivedTime      :: UTCTime
+        , _receivedProductId :: ProductId
+        , _receivedSequence  :: Sequence
+        , _receivedOrderId   :: OrderId
+        , _receivedSize      :: Double
+        , _receivedPrice     :: Double
+        , _receivedSide      :: Side
+        }
+    | ReceivedMarket
+        { _receivedTime      :: UTCTime
+        , _receivedProductId :: ProductId
+        , _receivedSequence  :: Sequence
+        , _receivedOrderId   :: OrderId
+        , _receivedFunds     :: Double
+        , _receivedSide      :: Side
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Received where
+    parseJSON = withObjectOfType "Received" "received" $ \o -> do
+        t <- o .: "order_type"
+        case t of
+            OrderLimit -> ReceivedLimit
+                <$> o .: "time"
+                <*> o .: "product_id"
+                <*> o .: "sequence"
+                <*> o .: "order_id"
+                <*> (o .: "size" >>= textDouble)
+                <*> (o .: "price" >>= textDouble)
+                <*> o .: "side"
+            OrderMarket -> ReceivedMarket
+                <$> o .: "time"
+                <*> o .: "product_id"
+                <*> o .: "sequence"
+                <*> o .: "order_id"
+                <*> (o .: "funds" >>= textDouble)
+                <*> o .: "side"
 
 -- Sum Type
 

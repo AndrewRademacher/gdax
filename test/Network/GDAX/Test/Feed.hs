@@ -23,6 +23,7 @@ tests e = testGroup "Feed Parse"
     , case_ticker e
     , case_level2 e
     , case_matches e
+    , case_full e
     , case_sum e
     ]
 
@@ -111,6 +112,31 @@ case_matches _ = testCase "Matches" $
 
         testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelMatches ["BTC-USD"]]
         testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelMatches ["BTC-USD"]]
+
+case_full :: Env -> TestTree
+case_full _ = testCase "Full" $
+        runSecureClient "ws-feed.gdax.com" 443 "/" client
+    where
+        client :: ClientApp ()
+        client conn = do
+            sendTextData conn (Aeson.encode testSub)
+
+            m1 <- receiveNotSubs conn
+            m2 <- receiveNotSubs conn
+
+            print m1
+            print m2
+
+            sendTextData conn (Aeson.encode testUnSub)
+
+            -- let mt1 = Aeson.eitherDecode m1 :: Either String Match
+            --     mt2 = Aeson.eitherDecode m2 :: Either String Match
+
+            -- assertRight mt1
+            -- assertRight mt2
+
+        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelFull ["BTC-USD"]]
+        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelFull ["BTC-USD"]]
 
 case_sum :: Env -> TestTree
 case_sum _ = testCase "Sum" $
