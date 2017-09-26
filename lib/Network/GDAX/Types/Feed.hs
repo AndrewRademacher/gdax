@@ -177,3 +177,55 @@ instance FromJSON Ticker where
         <*> (o .: "volume_30d" >>= textDouble)
         <*> (o .: "best_bid" >>= textDouble)
         <*> (o .: "best_ask" >>= textDouble)
+
+data Level2Snapshot
+    = Level2Snapshot
+        { _l2snapProductId :: ProductId
+        , _l2snapBids      :: Vector Level2Item
+        , _l2snapAsks      :: Vector Level2Item
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Level2Snapshot where
+    parseJSON = withObjectOfType "Level2Snapshot" "snapshot" $ \o -> Level2Snapshot
+        <$> o .: "product_id"
+        <*> o .: "bids"
+        <*> o .: "asks"
+
+data Level2Item
+    = Level2Item
+        { _l2itemPrice :: {-# UNPACK #-} Double
+        , _l2itemSize  :: {-# UNPACK #-} Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Level2Item where
+    parseJSON = withArray "Level2Item" $ \a -> Level2Item
+        <$> (unStringDouble <$> parseJSON (a V.! 0))
+        <*> (unStringDouble <$> parseJSON (a V.! 1))
+
+data Level2Update
+    = Level2Update
+        { _l2updateProductId :: ProductId
+        , _l2updateChanges   :: Vector Level2Change
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Level2Update where
+    parseJSON = withObjectOfType "Level2Update" "l2update" $ \o -> Level2Update
+        <$> o .: "product_id"
+        <*> o .: "changes"
+
+data Level2Change
+    = Level2Change
+        { _l2bidSide  :: {-# UNPACK #-} Side
+        , _l2bidPrice :: {-# UNPACK #-} Double
+        , _l2bidSize  :: {-# UNPACK #-} Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Level2Change where
+    parseJSON = withArray "Level2Bid" $ \a -> Level2Change
+        <$> parseJSON (a V.! 0)
+        <*> (unStringDouble <$> parseJSON (a V.! 1))
+        <*> (unStringDouble <$> parseJSON (a V.! 2))

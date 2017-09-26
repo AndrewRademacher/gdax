@@ -33,9 +33,9 @@ instance FromJSON StringDouble where
 
 bookItem :: (FromJSON c) => String -> (Double -> Double -> c -> d) -> Value -> Parser d
 bookItem name f = withArray name $ \a -> f
-        <$> (unStringDouble <$> parseJSON (a V.! 0))
-        <*> (unStringDouble <$> parseJSON (a V.! 1))
-        <*> parseJSON (a V.! 2)
+    <$> (unStringDouble <$> parseJSON (a V.! 0))
+    <*> (unStringDouble <$> parseJSON (a V.! 1))
+    <*> parseJSON (a V.! 2)
 
 withObjectOfType :: String -> Text -> (Object -> Parser a) -> Value -> Parser a
 withObjectOfType name type' fn = withObject name $ \o -> do

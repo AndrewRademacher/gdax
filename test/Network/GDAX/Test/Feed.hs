@@ -5,7 +5,12 @@ module Network.GDAX.Test.Feed
     ( tests
     ) where
 
+import           Control.Lens
+import           Data.Aeson              (Value (..))
 import qualified Data.Aeson              as Aeson
+import           Data.Aeson.Lens
+import qualified Data.ByteString.Lazy    as LBS
+import           Data.Text               (Text)
 import           Network.GDAX.Test.Types
 import           Network.GDAX.Types.Feed
 import           Network.WebSockets
@@ -17,6 +22,7 @@ tests :: Env -> TestTree
 tests e = testGroup "Feed Parse"
     [ case_heartbeat e
     , case_ticker e
+    , case_level2 e
     ]
 
 case_heartbeat :: Env -> TestTree
@@ -27,15 +33,12 @@ case_heartbeat _ = testCase "Heartbeats" $
         client conn = do
             sendTextData conn (Aeson.encode testSub)
 
-            m1 <- receiveData conn
-            m2 <- receiveData conn
+            m1 <- receiveNotSubs conn
 
             sendTextData conn (Aeson.encode testUnSub)
 
-            let subs = Aeson.eitherDecode m1 :: Either String Subscriptions
-                h1 = Aeson.eitherDecode m2 :: Either String Heartbeat
+            let h1 = Aeson.eitherDecode m1 :: Either String Heartbeat
 
-            assertRight subs
             assertRight h1
 
         testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelHeartbeat ["BTC-USD"]]
@@ -49,19 +52,54 @@ case_ticker _ = testCase "Ticker" $
         client conn = do
             sendTextData conn (Aeson.encode testSub)
 
-            -- m1 <- receiveData conn
-            m2 <- receiveData conn
+            m2 <- receiveNotSubs conn
 
             sendTextData conn (Aeson.encode testUnSub)
 
-            -- let subs = Aeson.eitherDecode m1 :: Either String Subscriptions
             let h1 = Aeson.eitherDecode m2 :: Either String Ticker
 
-            -- assertRight subs
             assertRight h1
 
         testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelTicker ["BTC-USD"]]
         testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelTicker ["BTC-USD"]]
+
+case_level2 :: Env -> TestTree
+case_level2 _ = testCase "Level 2" $
+        runSecureClient "ws-feed.gdax.com" 443 "/" client
+    where
+        client :: ClientApp ()
+        client conn = do
+            sendTextData conn (Aeson.encode testSub)
+
+            m1 <- receiveNotSubs conn
+            m2 <- receiveNotSubs conn
+            m3 <- receiveNotSubs conn
+
+            sendTextData conn (Aeson.encode testUnSub)
+
+            let snap = Aeson.eitherDecode m1 :: Either String Level2Snapshot
+                u1 = Aeson.eitherDecode m2 :: Either String Level2Update
+                u2 = Aeson.eitherDecode m3 :: Either String Level2Update
+
+            assertRight snap
+            assertRight u1
+            assertRight u2
+
+        testSub = Subscribe $ Subscriptions [] [ChannelSubscription ChannelLevel2 ["BTC-USD"]]
+        testUnSub =  UnSubscribe $ Subscriptions [] [ChannelSubscription ChannelLevel2 ["BTC-USD"]]
+
+receiveNotSubs :: Connection -> IO LBS.ByteString
+receiveNotSubs conn = loop
+    where
+        loop = do
+            res <- receiveData conn
+            let asValue = Aeson.eitherDecode res :: Either String Value
+            case asValue of
+                Left er -> fail (show er)
+                Right v ->
+                    if (v ^? key "type") == (Just (String "subscriptions"))
+                        then loop
+                        else return res
 
 assertRight :: (Show e) => Either e a -> IO ()
 assertRight (Right _) = return ()

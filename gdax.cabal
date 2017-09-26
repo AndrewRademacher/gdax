@@ -94,11 +94,13 @@ test-suite test-gdax
                       , bytestring
                       , exceptions
                       , lens
+                      , lens-aeson
                       , mtl
                       , tasty
                       , tasty-th
                       , tasty-quickcheck
                       , tasty-hunit
+                      , text
                       , time
                       , websockets
                       , wuss
