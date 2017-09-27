@@ -13,9 +13,9 @@ import           Test.Tasty
 
 main :: IO ()
 main = do
-    gAccessKey <- CBS.pack <$> getEnv "GDAX_KEY"
-    gSecretKey <- Base64.decodeLenient . CBS.pack <$> getEnv "GDAX_SECRET"
-    gPassphrase <- CBS.pack <$> getEnv "GDAX_PASSPHRASE"
+    gAccessKey <- CBS.pack <$> getEnv "GDAX_SANDBOX_KEY"
+    gSecretKey <- Base64.decodeLenient . CBS.pack <$> getEnv "GDAX_SANDBOX_SECRET"
+    gPassphrase <- CBS.pack <$> getEnv "GDAX_SANDBOX_PASSPHRASE"
 
     sbox <- mkSandboxGdax gAccessKey gSecretKey gPassphrase
     live <- mkLiveUnsignedGdax

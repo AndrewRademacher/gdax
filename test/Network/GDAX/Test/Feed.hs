@@ -6,20 +6,20 @@ module Network.GDAX.Test.Feed
     ) where
 
 import           Control.Lens
-import           Data.Aeson                    (FromJSON (..))
-import           Data.Aeson                    (Value (..))
-import qualified Data.Aeson                    as Aeson
+import           Data.Aeson                (FromJSON (..))
+import           Data.Aeson                (Value (..))
+import qualified Data.Aeson                as Aeson
 import           Data.Aeson.Lens
-import qualified Data.ByteString.Lazy          as LBS
+import qualified Data.ByteString.Lazy      as LBS
 import           Data.Proxy
-import qualified Data.Set                      as Set
-import           Data.Text                     (Text)
-import qualified Data.Text                     as T
-import           Data.Vector                   (Vector)
+import qualified Data.Set                  as Set
+import           Data.Text                 (Text)
+import qualified Data.Text                 as T
+import           Data.Vector               (Vector)
 import           Network.GDAX.Core
 import           Network.GDAX.Test.Types
 import           Network.GDAX.Types.Feed
-import           Network.GDAX.Types.MarketData (ProductId)
+import           Network.GDAX.Types.Shared
 import           Network.WebSockets
 import           Test.Tasty
 import           Test.Tasty.HUnit

@@ -8,12 +8,14 @@ module Network.GDAX.Types.Shared where
 import           Data.Aeson
 import           Data.Int
 import           Data.Monoid
+import           Data.Scientific
 import           Data.String
-import           Data.Text     (Text)
-import qualified Data.Text     as T
+import           Data.Text       (Text)
+import qualified Data.Text       as T
 import           Data.Typeable
 import           Data.UUID
 import           GHC.Generics
+import           Text.Read       (readMaybe)
 
 newtype AccountId = AccountId { unAccountId :: UUID }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
@@ -78,10 +80,19 @@ instance Show Sequence where
 
 
 newtype TradeId = TradeId { unTradeId :: Int64 }
-    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Enum, Typeable, Generic)
 
 instance Show TradeId where
     show = show . unTradeId
+
+instance FromJSON TradeId where
+    parseJSON (String s) = case readMaybe $ T.unpack s of
+                            Nothing -> fail "TradeId string could not be read as integer."
+                            Just v -> pure $ TradeId v
+    parseJSON (Number n) = case toBoundedInteger n of
+                            Nothing -> fail "TradeId scientific could not be converted into an integer."
+                            Just v -> pure $ TradeId v
+    parseJSON _ = fail "TradeId can only accept a number or string."
 
 data Side
     = Buy
@@ -101,3 +112,27 @@ newtype CurrencyId = CurrencyId { unCurrencyId :: Text }
 instance Show CurrencyId where
     show = show . unCurrencyId
 
+newtype EntryId = EntryId { unEntryId :: Int64 }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show EntryId where
+    show = show . unEntryId
+
+data EntryType
+    = EntryMatch
+    | EntryFee
+    | EntryTransfer
+    deriving (Eq, Typeable, Generic)
+
+instance Show EntryType where
+    show EntryMatch    = "match"
+    show EntryFee      = "fee"
+    show EntryTransfer = "transfer"
+
+instance FromJSON EntryType where
+    parseJSON = withText "EntryType" $ \t ->
+        case t of
+            "match"    -> pure EntryMatch
+            "fee"      -> pure EntryFee
+            "transfer" -> pure EntryTransfer
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid entry type."

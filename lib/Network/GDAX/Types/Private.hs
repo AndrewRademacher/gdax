@@ -7,6 +7,7 @@ module Network.GDAX.Types.Private where
 
 
 import           Data.Aeson
+import           Data.Time
 import           Data.Typeable
 import           GHC.Generics
 import           Network.GDAX.Parsers
@@ -54,3 +55,37 @@ instance FromJSON Account where
                 <*> (o .: "balance" >>= textDouble)
                 <*> (o .: "available" >>= textDouble)
                 <*> (o .: "hold" >>= textDouble)
+
+data Entry
+    = Entry
+        { _entryId        :: EntryId
+        , _entryType      :: EntryType
+        , _entryCreatedAt :: UTCTime
+        , _entryAmount    :: Double
+        , _entryBalance   :: Double
+        , _entryDetails   :: EntryDetails
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Entry where
+    parseJSON = withObject "Entry" $ \o -> Entry
+        <$> o .: "id"
+        <*> o .: "type"
+        <*> o .: "created_at"
+        <*> (o .: "amount" >>= textDouble)
+        <*> (o .: "balance" >>= textDouble)
+        <*> o .: "details"
+
+data EntryDetails
+    = EntryDetails
+        { _edetailsOrderId   :: Maybe OrderId
+        , _edetailsTradeId   :: Maybe TradeId
+        , _edetailsProductId :: Maybe ProductId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON EntryDetails where
+    parseJSON = withObject "EntryDetails" $ \o -> EntryDetails
+        <$> o .:? "order_id"
+        <*> o .:? "trade_id"
+        <*> o .:? "product_id"

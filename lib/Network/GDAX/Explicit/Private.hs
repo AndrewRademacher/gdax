@@ -28,3 +28,6 @@ listAccounts g = gdaxSignedGet g "/accounts"
 
 getAccount :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m Account
 getAccount g aid = gdaxSignedGet g ("/accounts/" <> show aid)
+
+getAccountHistory :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector Entry)
+getAccountHistory g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/ledger")
