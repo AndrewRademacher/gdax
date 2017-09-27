@@ -9,24 +9,18 @@ module Network.GDAX.Types.MarketData where
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Int
-import           Data.String
-import           Data.Text             (Text)
+import           Data.Text                 (Text)
 import           Data.Time
 import           Data.Time.Clock.POSIX
 import           Data.Typeable
 import           Data.UUID
-import           Data.Vector           (Vector)
-import qualified Data.Vector.Generic   as V
+import           Data.Vector               (Vector)
+import qualified Data.Vector.Generic       as V
 import           GHC.Generics
 import           Network.GDAX.Parsers
+import           Network.GDAX.Types.Shared
 
 -- Product
-
-newtype ProductId = ProductId { unProductId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
-
-instance Show ProductId where
-    show = show . unProductId
 
 data Product
     = Product
@@ -53,12 +47,6 @@ instance FromJSON Product where
         <*> o .: "margin_enabled"
 
 -- Book
-
-newtype Sequence = Sequence { unSequence :: Int64 }
-    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show Sequence where
-    show = show . unSequence
 
 data AggrigateBid
     = AggrigateBid
@@ -158,24 +146,6 @@ instance FromJSON Tick where
 
 -- Trade
 
-newtype TradeId = TradeId { unTradeId :: Int64 }
-    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show TradeId where
-    show = show . unTradeId
-
-data Side
-    = Buy
-    | Sell
-    deriving (Show, Typeable, Generic)
-
-instance FromJSON Side where
-    parseJSON = withText "Side" $ \t ->
-        case t of
-            "buy"  -> pure Buy
-            "sell" -> pure Sell
-            _      -> fail "Side was not either buy or sell."
-
 data Trade
     = Trade
         { _tradeId    :: TradeId
@@ -241,12 +211,6 @@ instance FromJSON Stats where
         <*> o .: "volume_30day"
 
 -- Currency
-
-newtype CurrencyId = CurrencyId { unCurrencyId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show CurrencyId where
-    show = show . unCurrencyId
 
 data Currency
     = Currency

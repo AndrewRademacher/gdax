@@ -19,6 +19,7 @@ import           Data.Vector
 import           Network.GDAX.Core
 import           Network.GDAX.Exceptions
 import           Network.GDAX.Types.MarketData
+import           Network.GDAX.Types.Shared
 import           Network.Wreq
 
 getProducts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Product)

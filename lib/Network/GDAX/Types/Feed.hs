@@ -7,16 +7,16 @@ module Network.GDAX.Types.Feed where
 
 import           Data.Aeson
 import           Data.Monoid
-import           Data.Text                     (Text)
-import qualified Data.Text                     as T
+import           Data.Text                 (Text)
+import qualified Data.Text                 as T
 import           Data.Time
 import           Data.Typeable
 import           Data.UUID
 import           Data.Vector
-import qualified Data.Vector.Generic           as V
+import qualified Data.Vector.Generic       as V
 import           GHC.Generics
 import           Network.GDAX.Parsers
-import           Network.GDAX.Types.MarketData hiding (Open)
+import           Network.GDAX.Types.Shared
 
 data Subscriptions
     = Subscriptions
@@ -267,41 +267,6 @@ instance FromJSON Match where
 
 -- Full Book Messages
 
-newtype UserId = UserId { unUserId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show UserId where
-    show = show . unUserId
-
-newtype ProfileId = ProfileId { unProfileId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show ProfileId where
-    show = show . unProfileId
-
-
-newtype OrderId = OrderId { unOrderId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show OrderId where
-    show = show . unOrderId
-
-data OrderType
-    = OrderLimit
-    | OrderMarket
-    deriving (Typeable, Generic)
-
-instance Show OrderType where
-    show OrderLimit  = "limit"
-    show OrderMarket = "market"
-
-instance FromJSON OrderType where
-    parseJSON = withText "OrderType" $ \t ->
-        case t of
-            "limit"  -> pure OrderLimit
-            "market" -> pure OrderMarket
-            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid order type."
-
 data Received
     = ReceivedLimit
         { _receivedTime      :: UTCTime
@@ -499,12 +464,6 @@ instance FromJSON MarginProfileUpdate where
         <*> (o .: "quote_balance" >>= textDouble)
         <*> (o .: "quote_funding" >>= textDouble)
         <*> o .: "private"
-
-newtype StopType = StopType { unStopType :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
-
-instance Show StopType where
-    show = show . unStopType
 
 data Activate
     = Activate

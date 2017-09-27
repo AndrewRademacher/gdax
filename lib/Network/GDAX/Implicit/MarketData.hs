@@ -12,6 +12,7 @@ import           Data.Vector
 import           Network.GDAX.Core
 import qualified Network.GDAX.Explicit.MarketData as Explicit
 import           Network.GDAX.Types.MarketData
+import           Network.GDAX.Types.Shared
 
 getProducts :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Product)
 getProducts = do

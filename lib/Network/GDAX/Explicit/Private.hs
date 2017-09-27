@@ -7,7 +7,9 @@ import           Control.Monad.Catch
 import           Control.Monad.IO.Class
 import           Data.Aeson
 import           Data.Text
+import           Data.Vector                (Vector)
 import           Network.GDAX.Core
+import           Network.GDAX.Types.Private
 
 placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> m Value
 placeOrder g = gdaxSignedPost g "/orders" body
@@ -19,6 +21,5 @@ placeOrder g = gdaxSignedPost g "/orders" body
             , "product_id" .= ("BTC-USD" :: Text)
             ]
 
-listAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m Value
-listAccounts g =
-    gdaxSignedGet g "/accounts"
+listAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Account)
+listAccounts g = gdaxSignedGet g "/accounts"
