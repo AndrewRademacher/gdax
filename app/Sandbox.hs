@@ -12,6 +12,7 @@ import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Base64     as Base64
 import qualified Data.ByteString.Char8      as CBS
 import qualified Data.ByteString.Lazy.Char8 as CLBS
+import qualified Data.Vector                as V
 import           Network.GDAX.Explicit
 import           Network.GDAX.Types.Feed
 import           Network.WebSockets

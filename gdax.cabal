@@ -75,6 +75,7 @@ executable sandbox
                       , base64-bytestring
                       , bytestring
                       , text
+                      , vector
                       , websockets
                       , wuss
 
