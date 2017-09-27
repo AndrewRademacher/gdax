@@ -17,6 +17,10 @@ textScientific = withText "Text Scientific" $ \t ->
         Just n  -> pure n
         Nothing -> fail "Could not parse string scientific."
 
+textMaybeDouble :: Maybe Value -> Parser (Maybe Double)
+textMaybeDouble Nothing  = return Nothing
+textMaybeDouble (Just v) = Just <$> textDouble v
+
 textDouble :: Value -> Parser Double
 textDouble = withText "Text Double" $ \t ->
     case readMaybe (T.unpack t) of

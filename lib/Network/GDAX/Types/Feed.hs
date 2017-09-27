@@ -350,7 +350,7 @@ data Done
         { _doneTime          :: UTCTime
         , _doneProductId     :: ProductId
         , _doneSequence      :: Sequence
-        , _donePrice         :: Double
+        , _donePrice         :: Maybe Double
         , _doneOrderId       :: OrderId
         , _doneReason        :: Reason
         , _doneSide          :: Side
@@ -363,7 +363,7 @@ instance FromJSON Done where
         <$> o .: "time"
         <*> o .: "product_id"
         <*> o .: "sequence"
-        <*> (o .: "price" >>= textDouble)
+        <*> (o .:? "price" >>= textMaybeDouble)
         <*> o .: "order_id"
         <*> o .: "reason"
         <*> o .: "side"
