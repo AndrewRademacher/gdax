@@ -31,3 +31,6 @@ getAccount g aid = gdaxSignedGet g ("/accounts/" <> show aid)
 
 getAccountHistory :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector Entry)
 getAccountHistory g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/ledger")
+
+getAccountHolds :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector Hold)
+getAccountHolds g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/holds")

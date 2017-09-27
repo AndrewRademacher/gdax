@@ -136,3 +136,15 @@ instance FromJSON EntryType where
             "fee"      -> pure EntryFee
             "transfer" -> pure EntryTransfer
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid entry type."
+
+newtype TransferId = TransferId { unTransferId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show TransferId where
+    show = show . unTransferId
+
+newtype HoldId = HoldId { unHoldId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show HoldId where
+    show = show . unHoldId

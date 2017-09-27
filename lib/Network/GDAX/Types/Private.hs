@@ -7,6 +7,8 @@ module Network.GDAX.Types.Private where
 
 
 import           Data.Aeson
+import           Data.Monoid
+import qualified Data.Text                 as T
 import           Data.Time
 import           Data.Typeable
 import           GHC.Generics
@@ -89,3 +91,35 @@ instance FromJSON EntryDetails where
         <$> o .:? "order_id"
         <*> o .:? "trade_id"
         <*> o .:? "product_id"
+
+data Hold
+    = Hold
+        { _holdId        :: HoldId
+        , _holdAccountId :: AccountId
+        , _holdCreatedAt :: UTCTime
+        , _holdUpdatedAt :: UTCTime
+        , _holdAmount    :: Double
+        , _holdReference :: HoldReference
+        }
+    deriving (Show, Typeable, Generic)
+
+data HoldReference
+    = HoldOrder OrderId
+    | HoldTransfer TransferId
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Hold where
+    parseJSON = withObject "Hold" $ \o -> Hold
+        <$> o .: "id"
+        <*> o .: "account_id"
+        <*> o .: "created_at"
+        <*> o .: "updated_at"
+        <*> o .: "amount"
+        <*> parseRef o
+        where
+            parseRef o = do
+                t <- o .: "type"
+                case t of
+                    "order" -> HoldOrder <$> o .: "ref"
+                    "transfer" -> HoldTransfer <$> o .: "ref"
+                    _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid type for hold orders."

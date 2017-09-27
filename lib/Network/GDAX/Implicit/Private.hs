@@ -33,3 +33,8 @@ getAccountHistory :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Ac
 getAccountHistory aid = do
     g <- (^. gdax) <$> ask
     Explicit.getAccountHistory g aid
+
+getAccountHolds :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => AccountId -> m (Vector Hold)
+getAccountHolds aid = do
+    g <- (^. gdax) <$> ask
+    Explicit.getAccountHolds g aid
