@@ -62,7 +62,7 @@ executable sandbox
     hs-source-dirs:     app
     default-language:   Haskell2010
 
-    ghc-options:        -rtsopts -Wall
+    ghc-options:        -rtsopts
 
     build-depends:      base            >4 && < 6
 
