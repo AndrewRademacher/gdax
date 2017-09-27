@@ -16,6 +16,7 @@ import qualified Data.Set                      as Set
 import           Data.Text                     (Text)
 import qualified Data.Text                     as T
 import           Data.Vector                   (Vector)
+import           Network.GDAX.Core
 import           Network.GDAX.Test.Types
 import           Network.GDAX.Types.Feed
 import           Network.GDAX.Types.MarketData (ProductId)
@@ -26,16 +27,16 @@ import           Wuss
 
 tests :: Env -> TestTree
 tests e = testGroup "Feed Parse"
-    [ parseTestClient (mkBTCSub [ChannelHeartbeat]) "heartbeat" (Proxy :: Proxy Heartbeat)
-    , parseTestClient (mkBTCSub [ChannelTicker]) "ticker" (Proxy :: Proxy Ticker)
-    , parseTestClient (mkBTCSub [ChannelLevel2]) "snapshot" (Proxy :: Proxy Level2Snapshot)
-    , parseTestClient (mkBTCSub [ChannelLevel2]) "l2update" (Proxy :: Proxy Level2Update)
-    , parseTestClient (mkBTCSub [ChannelMatches]) "last_match" (Proxy :: Proxy Match)
-    , parseTestClient (mkBTCSub [ChannelMatches]) "match" (Proxy :: Proxy Match)
-    , parseTestClient (mkBTCSub [ChannelFull]) "received" (Proxy :: Proxy Received)
-    , parseTestClient (mkBTCSub [ChannelFull]) "open" (Proxy :: Proxy Open)
-    , parseTestClient (mkBTCSub [ChannelFull]) "done" (Proxy :: Proxy Done)
-    , parseTestClient (mkBTCSub [ChannelFull]) "match" (Proxy :: Proxy Match)
+    [ parseTestClient e (mkBTCSub [ChannelHeartbeat]) "heartbeat" (Proxy :: Proxy Heartbeat)
+    , parseTestClient e (mkBTCSub [ChannelTicker]) "ticker" (Proxy :: Proxy Ticker)
+    , parseTestClient e (mkBTCSub [ChannelLevel2]) "snapshot" (Proxy :: Proxy Level2Snapshot)
+    , parseTestClient e (mkBTCSub [ChannelLevel2]) "l2update" (Proxy :: Proxy Level2Update)
+    , parseTestClient e (mkBTCSub [ChannelMatches]) "last_match" (Proxy :: Proxy Match)
+    , parseTestClient e (mkBTCSub [ChannelMatches]) "match" (Proxy :: Proxy Match)
+    , parseTestClient e (mkBTCSub [ChannelFull]) "received" (Proxy :: Proxy Received)
+    , parseTestClient e (mkBTCSub [ChannelFull]) "open" (Proxy :: Proxy Open)
+    , parseTestClient e (mkBTCSub [ChannelFull]) "done" (Proxy :: Proxy Done)
+    , parseTestClient e (mkBTCSub [ChannelFull]) "match" (Proxy :: Proxy Match)
 
     -- This one cannot run independently, since you only receive them if you
     -- trade against yourself.
@@ -59,15 +60,15 @@ mkSubscriptions pid cs = Subscriptions [] $ fmap fn cs
     where
         fn c = ChannelSubscription c [pid]
 
-parseTestClient :: (FromJSON a) => Subscriptions -> Text -> Proxy a -> TestTree
-parseTestClient subs t pt = testCase (T.unpack t) $ runSecureClient "ws-feed.gdax.com" 443 "/" $ \conn -> do
+parseTestClient :: (FromJSON a) => Env -> Subscriptions -> Text -> Proxy a -> TestTree
+parseTestClient e subs t pt = testCase (T.unpack t) $ runSecureClient (e ^. liveUnsigned . socketEndpoint) 443 "/" $ \conn -> do
     sendTextData conn (Aeson.encode testSub)
     m1 <- receiveOfType conn t
     let res = Aeson.eitherDecode m1
     case res of
         Left er -> fail (show er)
         Right v ->
-            let final = asProxyTypeOf v pt
+            let _final = asProxyTypeOf v pt
             in return ()
 
     sendTextData conn (Aeson.encode testUnSub)
