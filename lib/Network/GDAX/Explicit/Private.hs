@@ -108,3 +108,6 @@ createReport g nr = gdaxSignedPost g "/reports" [] nr
 
 getReport :: (MonadIO m, MonadThrow m) => Gdax -> ReportId -> m Report
 getReport g rid = gdaxSignedGet g ("/reports/" <> show rid) []
+
+listTrailingVolume :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector TrailingVolume)
+listTrailingVolume g = gdaxSignedGet g "/users/self/trailing-volume" []

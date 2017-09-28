@@ -148,3 +148,8 @@ getReport :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ReportId -
 getReport rid = do
     g <- (^. gdax) <$> ask
     Explicit.getReport g rid
+
+listTrailingVolume :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector TrailingVolume)
+listTrailingVolume = do
+    g <- (^. gdax) <$> ask
+    Explicit.listTrailingVolume g

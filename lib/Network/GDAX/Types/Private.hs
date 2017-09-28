@@ -920,3 +920,19 @@ instance FromJSON ReportParams where
     parseJSON = withObject "ReportParmas" $ \o -> ReportParams
         <$> o .: "start_date"
         <*> o .: "end_date"
+
+data TrailingVolume
+    = TrailingVolume
+        { _tvProductId      :: ProductId
+        , _tvExchangeVolume :: Double
+        , _tvVolume         :: Double
+        , _tvRecorededAt    :: UTCTime
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON TrailingVolume where
+    parseJSON = withObject "TrailingVolume" $ \o -> TrailingVolume
+        <$> o .: "product_id"
+        <*> o .: "exchange_volume"
+        <*> o .: "volume"
+        <*> o .: "recorded_at"
