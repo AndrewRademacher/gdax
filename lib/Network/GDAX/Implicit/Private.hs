@@ -7,17 +7,11 @@ import           Control.Lens                  hiding ((.=))
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
 import           Control.Monad.Reader
-import           Data.Aeson
 import           Data.Vector                   (Vector)
 import           Network.GDAX.Core
 import qualified Network.GDAX.Explicit.Private as Explicit
 import           Network.GDAX.Types.Private
 import           Network.GDAX.Types.Shared
-
-placeOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m Value
-placeOrder = do
-    g <- (^. gdax) <$> ask
-    Explicit.placeOrder g
 
 listAccounts :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector Account)
 listAccounts = do
@@ -38,3 +32,23 @@ getAccountHolds :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Acco
 getAccountHolds aid = do
     g <- (^. gdax) <$> ask
     Explicit.getAccountHolds g aid
+
+placeOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewOrder -> m ()
+placeOrder no = do
+    g <- (^. gdax) <$> ask
+    Explicit.placeOrder g no
+
+placeLimitOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewLimitOrder -> m ()
+placeLimitOrder no = do
+    g <- (^. gdax) <$> ask
+    Explicit.placeLimitOrder g no
+
+placeMarketOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewMarketOrder -> m ()
+placeMarketOrder no = do
+    g <- (^. gdax) <$> ask
+    Explicit.placeMarketOrder g no
+
+placeStopOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewStopOrder -> m ()
+placeStopOrder no = do
+    g <- (^. gdax) <$> ask
+    Explicit.placeStopOrder g no

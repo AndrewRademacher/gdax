@@ -5,23 +5,11 @@ module Network.GDAX.Explicit.Private where
 
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
-import           Data.Aeson
 import           Data.Monoid
-import           Data.Text
 import           Data.Vector                (Vector)
 import           Network.GDAX.Core
 import           Network.GDAX.Types.Private
 import           Network.GDAX.Types.Shared
-
-placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> m Value
-placeOrder g = gdaxSignedPost g "/orders" body
-    where
-        body = object
-            [ "size" .= ("0.01" :: Text)
-            , "price" .= ("0.100" :: Text)
-            , "side" .= ("buy" :: Text)
-            , "product_id" .= ("BTC-USD" :: Text)
-            ]
 
 listAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Account)
 listAccounts g = gdaxSignedGet g "/accounts"
@@ -34,3 +22,15 @@ getAccountHistory g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/ledger"
 
 getAccountHolds :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector Hold)
 getAccountHolds g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/holds")
+
+placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewOrder -> m ()
+placeOrder g no = gdaxSignedPost g "/orders" no
+
+placeLimitOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewLimitOrder -> m ()
+placeLimitOrder g no = gdaxSignedPost g "/orders" no
+
+placeMarketOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewMarketOrder -> m ()
+placeMarketOrder g no = gdaxSignedPost g "/orders" no
+
+placeStopOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewStopOrder -> m ()
+placeStopOrder g no = gdaxSignedPost g "/orders" no
