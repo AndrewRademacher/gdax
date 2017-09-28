@@ -343,3 +343,22 @@ newtype PaymentMethodType = PaymentMethodType { unPaymentMethodType :: Int64 }
 
 instance Show PaymentMethodType where
     show = show . unPaymentMethodType
+
+data CoinbaseAccountType
+    = CBTypeWallet
+    | CBTypeFiat
+    deriving (Typeable, Generic)
+
+instance Show CoinbaseAccountType where
+    show CBTypeWallet = "wallet"
+    show CBTypeFiat   = "fiat"
+
+instance ToJSON CoinbaseAccountType where
+    toJSON = String . T.pack . show
+
+instance FromJSON CoinbaseAccountType where
+    parseJSON = withText "CoinbaseAccountType" $ \t ->
+        case t of
+            "wallet" -> pure CBTypeWallet
+            "fiat" -> pure CBTypeFiat
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."

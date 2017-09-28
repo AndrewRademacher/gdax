@@ -783,3 +783,89 @@ instance FromJSON LimitValue where
     parseJSON = withObject "LimitValue" $ \o -> LimitValue
         <$> o .: "amount"
         <*> o .: "currency"
+
+data CoinbaseAccount
+    = CoinbaseAccount
+        { _cbaccountId              :: AccountId
+        , _cbaccountName            :: Text
+        , _cbaccountBalance         :: Double
+        , _cbaccountCurrency        :: CurrencyId
+        , _cbaccountType            :: CoinbaseAccountType
+        , _cbaccountPrimary         :: Bool
+        , _cbaccountActive          :: Bool
+        , _cbaccountWireDepositInfo :: Maybe WireDepositInfo
+        , _cbaccountSepaDepositInfo :: Maybe SepaDepositInfo
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON CoinbaseAccount where
+    parseJSON = withObject "CoinbaseAccount" $ \o -> CoinbaseAccount
+        <$> o .: "id"
+        <*> o .: "name"
+        <*> o .: "balance"
+        <*> o .: "currency"
+        <*> o .: "type"
+        <*> o .: "primary"
+        <*> o .: "active"
+        <*> o .:? "wire_deposit_information"
+        <*> o .:? "sepa_deposit_information"
+
+data WireDepositInfo
+    = WireDepositInfo
+        { _wdiAccountNumber  :: Integer
+        , _wdiRoutingNumber  :: Integer
+        , _wdiBankName       :: Text
+        , _wdiBankAddress    :: Text
+        , _wdiBankCountry    :: Country
+        , _wdiAccountName    :: Text
+        , _wdiAccountAddress :: Text
+        , _wdiReference      :: Text
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON WireDepositInfo where
+    parseJSON = withObject "WireDepositInfo" $ \o -> WireDepositInfo
+        <$> o .: "account_number"
+        <*> o .: "routing_number"
+        <*> o .: "bank_name"
+        <*> o .: "bank_address"
+        <*> o .: "bank_country"
+        <*> o .: "account_name"
+        <*> o .: "account_address"
+        <*> o .: "reference"
+
+data Country
+    = Country
+        { _countryCode :: Text
+        , _countryName :: Text
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Country where
+    parseJSON = withObject "Country" $ \o -> Country
+        <$> o .: "code"
+        <*> o .: "name"
+
+data SepaDepositInfo
+    = SepaDepositInfo
+        { _sepaIban            :: Text
+        , _sepaSwift           :: Text
+        , _sepaBankName        :: Text
+        , _sepaBankAddress     :: Text
+        , _sepaBankCountryName :: Text
+        , _sepaAccountName     :: Text
+        , _sepaAccountAddress  :: Text
+        , _sepaReference       :: Text
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON SepaDepositInfo where
+    parseJSON = withObject "SepaDepositInfo" $ \o -> SepaDepositInfo
+        <$> o .: "iban"
+        <*> o .: "swift"
+        <*> o .: "bank_name"
+        <*> o .: "bank_address"
+        <*> o .: "bank_country_name"
+        <*> o .: "account_name"
+        <*> o .: "account_address"
+        <*> o .: "reference"

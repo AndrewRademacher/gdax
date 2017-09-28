@@ -134,3 +134,9 @@ listPaymentMethods = do
     g <- (^. gdax) <$> ask
     Explicit.listPaymentMethods g
 
+listCoinbaseAccounts :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector CoinbaseAccount)
+listCoinbaseAccounts = do
+    g <- (^. gdax) <$> ask
+    Explicit.listCoinbaseAccounts g
+
+
