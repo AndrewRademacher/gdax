@@ -74,3 +74,10 @@ createMarginTransfer g nmt = gdaxSignedPost g "/profiles/margin-transfer" [] nmt
 
 getPosition :: (MonadIO m, MonadThrow m) => Gdax -> m Position
 getPosition g = gdaxSignedGet g "/position" []
+
+type RepayOnly = Bool
+
+closePosition :: (MonadIO m, MonadThrow m) => Gdax -> RepayOnly -> m ()
+closePosition g r = gdaxSignedPost g "/position/close" [("repay_only", str)] ()
+    where
+        str = if r then "true" else "false"

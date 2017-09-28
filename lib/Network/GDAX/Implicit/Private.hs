@@ -98,3 +98,9 @@ getPosition :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m Positi
 getPosition = do
     g <- (^. gdax) <$> ask
     Explicit.getPosition g
+
+closePosition :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Explicit.RepayOnly -> m ()
+closePosition r = do
+    g <- (^. gdax) <$> ask
+    Explicit.closePosition g r
+
