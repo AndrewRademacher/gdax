@@ -49,3 +49,6 @@ listOrders g pids oss = gdaxSignedGet g "/orders" params
     where
         params = fmap (\p -> ("product_id", T.pack (show p))) (Set.toList pids)
             <> fmap (\s -> ("status", T.pack (show s))) (Set.toList oss)
+
+getOrder :: (MonadIO m, MonadThrow m) => Gdax -> OrderId -> m Order
+getOrder g oid = gdaxSignedGet g ("/orders/" <> show oid) []

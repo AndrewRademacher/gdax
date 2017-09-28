@@ -68,3 +68,8 @@ listOrders :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Set Produ
 listOrders pids oss = do
     g <- (^. gdax) <$> ask
     Explicit.listOrders g pids oss
+
+getOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => OrderId -> m Order
+getOrder oid  = do
+    g <- (^. gdax) <$> ask
+    Explicit.getOrder g oid
