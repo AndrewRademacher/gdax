@@ -56,6 +56,7 @@ type Passphrase = ByteString
 
 type Path = String
 type Method = ByteString
+type Params = [(Text, Text)]
 
 liveRest :: Endpoint
 liveRest = "https://api.gdax.com"
@@ -137,7 +138,7 @@ gdaxGetWith g path opts' = do
     where
         opts = opts' & manager .~ Right (g ^. networkManager)
 
-gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> [(Text, Text)] -> m b
+gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> Params -> m b
 {-# INLINE gdaxSignedGet #-}
 gdaxSignedGet g path par = do
     signedOpts <- signOptions g "GET" path Nothing opts
@@ -147,18 +148,19 @@ gdaxSignedGet g path par = do
         opts = defaults & manager .~ Right (g ^. networkManager)
                         & params .~ par
 
-gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Path -> a -> m b
+gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Path -> Params -> a -> m b
 {-# INLINE gdaxSignedPost #-}
-gdaxSignedPost g path body = do
+gdaxSignedPost g path par body = do
     signedOpts <- signOptions g "POST" path (Just bodyBS) opts
     res <- liftIO $ postWith signedOpts (g ^. restEndpoint <> path) bodyBS
     decodeResult res
     where
         opts = defaults & header "Content-Type" .~ [ "application/json" ]
                         & manager .~ Right (g ^. networkManager)
+                        & params .~ par
         bodyBS = CLBS.toStrict $ Aeson.encode body
 
-gdaxSignedDelete :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> [(Text, Text)] -> m b
+gdaxSignedDelete :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> Params -> m b
 {-# INLINE gdaxSignedDelete #-}
 gdaxSignedDelete g path par = do
     signedOpts <- signOptions g "DELETE" path Nothing opts

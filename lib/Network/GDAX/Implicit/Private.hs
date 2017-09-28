@@ -83,3 +83,9 @@ listFundings :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Set Fun
 listFundings fs = do
     g <- (^. gdax) <$> ask
     Explicit.listFundings g fs
+
+repayFunding :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => CurrencyId -> Double -> m ()
+repayFunding c a = do
+    g <- (^. gdax) <$> ask
+    Explicit.repayFunding g c a
+

@@ -27,16 +27,16 @@ getAccountHolds :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector H
 getAccountHolds g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/holds") []
 
 placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewOrder -> m NewOrderConfirmation
-placeOrder g no = gdaxSignedPost g "/orders" no
+placeOrder g no = gdaxSignedPost g "/orders" [] no
 
 placeLimitOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewLimitOrder -> m NewOrderConfirmation
-placeLimitOrder g no = gdaxSignedPost g "/orders" no
+placeLimitOrder g no = gdaxSignedPost g "/orders" [] no
 
 placeMarketOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewMarketOrder -> m NewOrderConfirmation
-placeMarketOrder g no = gdaxSignedPost g "/orders" no
+placeMarketOrder g no = gdaxSignedPost g "/orders" [] no
 
 placeStopOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewStopOrder -> m NewOrderConfirmation
-placeStopOrder g no = gdaxSignedPost g "/orders" no
+placeStopOrder g no = gdaxSignedPost g "/orders" [] no
 
 cancelOrder :: (MonadIO m, MonadThrow m) => Gdax -> OrderId -> m ()
 cancelOrder g oid = gdaxSignedDelete g ("/orders/" <> show oid) []
@@ -61,3 +61,10 @@ listFills g oids pids = gdaxSignedGet g "/fills" params
 
 listFundings :: (MonadIO m, MonadThrow m) => Gdax -> Set FundingStatus -> m (Vector Funding)
 listFundings g fs = gdaxSignedGet g "/fundings" (fmap (\f -> ("status", T.pack (show f))) (Set.toList fs))
+
+repayFunding :: (MonadIO m, MonadThrow m) => Gdax -> CurrencyId -> Double -> m ()
+repayFunding g c a = gdaxSignedPost g "/funding/repay" params ()
+    where
+        params = [ ("currency", T.pack (show c))
+                 , ("amount", T.pack (show a))
+                 ]
