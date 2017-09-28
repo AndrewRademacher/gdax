@@ -206,3 +206,31 @@ instance FromJSON Liquidity where
             "M" -> pure LiquidityMaker
             "T" -> pure LiquidityTaker
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid liquidity."
+
+newtype FundingId = FundingId { unFundingId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show FundingId where
+    show = show . unFundingId
+
+data FundingStatus
+    = FundingOutstanding
+    | FundingSettled
+    | FundingRejected
+    deriving (Typeable, Generic)
+
+instance Show FundingStatus where
+    show FundingOutstanding = "outstanding"
+    show FundingSettled     = "settled"
+    show FundingRejected    = "rejected"
+
+instance ToJSON FundingStatus where
+    toJSON = String . T.pack . show
+
+instance FromJSON FundingStatus where
+    parseJSON = withText "FundingStatus" $ \t ->
+        case t of
+            "outstanding" -> pure FundingOutstanding
+            "settled" -> pure FundingSettled
+            "rejected" -> pure FundingRejected
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid funding status."

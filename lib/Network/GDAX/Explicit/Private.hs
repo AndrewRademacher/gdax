@@ -58,3 +58,6 @@ listFills g oids pids = gdaxSignedGet g "/fills" params
     where
         params = fmap (\p -> ("product_id", T.pack (show p))) (Set.toList pids)
             <> fmap (\o -> ("order_id", T.pack (show o))) (Set.toList oids)
+
+listFundings :: (MonadIO m, MonadThrow m) => Gdax -> Set FundingStatus -> m (Vector Funding)
+listFundings g fs = gdaxSignedGet g "/fundings" (fmap (\f -> ("status", T.pack (show f))) (Set.toList fs))

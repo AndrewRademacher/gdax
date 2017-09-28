@@ -356,6 +356,7 @@ data Fill
         , _fillSettled   :: Bool
         , _fillSide      :: Side
         }
+    deriving (Show, Typeable, Generic)
 
 instance FromJSON Fill where
     parseJSON = withObject "Fill" $ \o -> Fill
@@ -369,3 +370,31 @@ instance FromJSON Fill where
         <*> o .: "fee"
         <*> o .: "settled"
         <*> o .: "side"
+
+data Funding
+    = Funding
+        { _fundingId            :: FundingId
+        , _fundingOrderId       :: OrderId
+        , _fundingProfileId     :: ProfileId
+        , _fundingAmount        :: Double
+        , _fundingStatus        :: FundingStatus
+        , _fundingCreatedAt     :: UTCTime
+        , _fundingCurrency      :: CurrencyId
+        , _fundingRepaidAmount  :: Double
+        , _fundingDefaultAmount :: Double
+        , _fundingRepaidDefault :: Bool
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Funding where
+    parseJSON = withObject "Funding" $ \o -> Funding
+        <$> o .: "id"
+        <*> o .: "order_id"
+        <*> o .: "profile_id"
+        <*> o .: "amount"
+        <*> o .: "status"
+        <*> o .: "created_at"
+        <*> o .: "currency"
+        <*> o .: "repaid_amount"
+        <*> o .: "default_amount"
+        <*> o .: "repaid_default"

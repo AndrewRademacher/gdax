@@ -78,3 +78,8 @@ listFills :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Set OrderI
 listFills oids pids  = do
     g <- (^. gdax) <$> ask
     Explicit.listFills g oids pids
+
+listFundings :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Set FundingStatus -> m (Vector Funding)
+listFundings fs = do
+    g <- (^. gdax) <$> ask
+    Explicit.listFundings g fs
