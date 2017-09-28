@@ -294,3 +294,13 @@ instance FromJSON CancelAfterPolicy where
 --         {
 --         }
 --     deriving (Show, Typeable, Generic)
+
+data NewOrderConfirmation
+    = NewOrderConfirmation
+        { _nocOrderId :: OrderId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON NewOrderConfirmation where
+    parseJSON = withObject "NewOrderConfirmation" $ \o -> NewOrderConfirmation
+        <$> o .: "id"

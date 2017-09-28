@@ -33,22 +33,22 @@ getAccountHolds aid = do
     g <- (^. gdax) <$> ask
     Explicit.getAccountHolds g aid
 
-placeOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewOrder -> m ()
+placeOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewOrder -> m NewOrderConfirmation
 placeOrder no = do
     g <- (^. gdax) <$> ask
     Explicit.placeOrder g no
 
-placeLimitOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewLimitOrder -> m ()
+placeLimitOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewLimitOrder -> m NewOrderConfirmation
 placeLimitOrder no = do
     g <- (^. gdax) <$> ask
     Explicit.placeLimitOrder g no
 
-placeMarketOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewMarketOrder -> m ()
+placeMarketOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewMarketOrder -> m NewOrderConfirmation
 placeMarketOrder no = do
     g <- (^. gdax) <$> ask
     Explicit.placeMarketOrder g no
 
-placeStopOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewStopOrder -> m ()
+placeStopOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewStopOrder -> m NewOrderConfirmation
 placeStopOrder no = do
     g <- (^. gdax) <$> ask
     Explicit.placeStopOrder g no

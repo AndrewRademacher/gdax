@@ -23,14 +23,14 @@ getAccountHistory g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/ledger"
 getAccountHolds :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector Hold)
 getAccountHolds g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/holds")
 
-placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewOrder -> m ()
+placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewOrder -> m NewOrderConfirmation
 placeOrder g no = gdaxSignedPost g "/orders" no
 
-placeLimitOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewLimitOrder -> m ()
+placeLimitOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewLimitOrder -> m NewOrderConfirmation
 placeLimitOrder g no = gdaxSignedPost g "/orders" no
 
-placeMarketOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewMarketOrder -> m ()
+placeMarketOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewMarketOrder -> m NewOrderConfirmation
 placeMarketOrder g no = gdaxSignedPost g "/orders" no
 
-placeStopOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewStopOrder -> m ()
+placeStopOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewStopOrder -> m NewOrderConfirmation
 placeStopOrder g no = gdaxSignedPost g "/orders" no
