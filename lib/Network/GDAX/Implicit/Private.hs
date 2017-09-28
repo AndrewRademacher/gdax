@@ -7,6 +7,7 @@ import           Control.Lens                  hiding ((.=))
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
 import           Control.Monad.Reader
+import           Data.Set                      (Set)
 import           Data.Vector                   (Vector)
 import           Network.GDAX.Core
 import qualified Network.GDAX.Explicit.Private as Explicit
@@ -62,3 +63,8 @@ cancelAllOrders :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Prod
 cancelAllOrders pid = do
     g <- (^. gdax) <$> ask
     Explicit.cancelAllOrders g pid
+
+listOrders :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Set ProductId -> Set OrderStatus -> m (Vector Order)
+listOrders pids oss = do
+    g <- (^. gdax) <$> ask
+    Explicit.listOrders g pids oss

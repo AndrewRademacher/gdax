@@ -6,6 +6,8 @@ module Network.GDAX.Explicit.Private where
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
 import           Data.Monoid
+import           Data.Set                   (Set)
+import qualified Data.Set                   as Set
 import qualified Data.Text                  as T
 import           Data.Vector                (Vector)
 import           Network.GDAX.Core
@@ -13,16 +15,16 @@ import           Network.GDAX.Types.Private
 import           Network.GDAX.Types.Shared
 
 listAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector Account)
-listAccounts g = gdaxSignedGet g "/accounts"
+listAccounts g = gdaxSignedGet g "/accounts" []
 
 getAccount :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m Account
-getAccount g aid = gdaxSignedGet g ("/accounts/" <> show aid)
+getAccount g aid = gdaxSignedGet g ("/accounts/" <> show aid) []
 
 getAccountHistory :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector Entry)
-getAccountHistory g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/ledger")
+getAccountHistory g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/ledger") []
 
 getAccountHolds :: (MonadIO m, MonadThrow m) => Gdax -> AccountId -> m (Vector Hold)
-getAccountHolds g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/holds")
+getAccountHolds g aid = gdaxSignedGet g ("/accounts/" <> show aid <> "/holds") []
 
 placeOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewOrder -> m NewOrderConfirmation
 placeOrder g no = gdaxSignedPost g "/orders" no
@@ -41,3 +43,9 @@ cancelOrder g oid = gdaxSignedDelete g ("/orders/" <> show oid) []
 
 cancelAllOrders :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> m (Vector OrderId)
 cancelAllOrders g pid = gdaxSignedDelete g ("/orders") [("product_id", T.pack (show pid))]
+
+listOrders :: (MonadIO m, MonadThrow m) => Gdax -> Set ProductId -> Set OrderStatus -> m (Vector Order)
+listOrders g pids oss = gdaxSignedGet g "/orders" params
+    where
+        params = fmap (\p -> ("product_id", T.pack (show p))) (Set.toList pids)
+            <> fmap (\s -> ("status", T.pack (show s))) (Set.toList oss)

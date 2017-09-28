@@ -43,6 +43,7 @@ library
                      , base64-bytestring
                      , byteable
                      , bytestring
+                     , containers
                      , cryptohash
                      , exceptions
                      , http-client

@@ -137,14 +137,15 @@ gdaxGetWith g path opts' = do
     where
         opts = opts' & manager .~ Right (g ^. networkManager)
 
-gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
+gdaxSignedGet :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> [(Text, Text)] -> m b
 {-# INLINE gdaxSignedGet #-}
-gdaxSignedGet g path = do
+gdaxSignedGet g path par = do
     signedOpts <- signOptions g "GET" path Nothing opts
     res <- liftIO $ getWith signedOpts (g ^. restEndpoint <> path)
     decodeResult res
     where
         opts = defaults & manager .~ Right (g ^. networkManager)
+                        & params .~ par
 
 gdaxSignedPost :: (MonadIO m, MonadThrow m, ToJSON a, FromJSON b) => Gdax -> Path -> a -> m b
 {-# INLINE gdaxSignedPost #-}

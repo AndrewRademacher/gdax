@@ -304,3 +304,41 @@ data NewOrderConfirmation
 instance FromJSON NewOrderConfirmation where
     parseJSON = withObject "NewOrderConfirmation" $ \o -> NewOrderConfirmation
         <$> o .: "id"
+
+data Order
+    = Order
+        { _orderId                  :: OrderId
+        , _orderPrice               :: Double
+        , _orderSize                :: Double
+        , _orderProductId           :: ProductId
+        , _orderSide                :: Side
+        , _orderSelfTradePrevention :: SelfTradePolicy
+        , _orderType                :: OrderType
+        , _orderTimeInForce         :: TimeInForce
+        , _orderPostOnly            :: Bool
+        , _orderCreatedAt           :: UTCTime
+        , _orderFillFees            :: Double
+        , _orderFilledSize          :: Double
+        , _orderExecutedValue       :: Double
+        , _orderStatus              :: OrderStatus
+        , _orderSettled             :: Bool
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Order where
+    parseJSON = withObject "Order" $ \o -> Order
+        <$> o .: "id"
+        <*> o .: "price"
+        <*> o .: "size"
+        <*> o .: "product_id"
+        <*> o .: "side"
+        <*> o .: "stp"
+        <*> o .: "type"
+        <*> o .: "time_in_force"
+        <*> o .: "post_only"
+        <*> o .: "created_at"
+        <*> o .: "fill_fees"
+        <*> o .: "filled_size"
+        <*> o .: "executed_value"
+        <*> o .: "status"
+        <*> o .: "settled"

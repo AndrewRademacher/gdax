@@ -159,3 +159,31 @@ newtype ClientOrderId = ClientOrderId { unClientOrderId :: UUID }
 
 instance Show ClientOrderId where
     show = show . unClientOrderId
+
+data OrderStatus
+    = OrderOpen
+    | OrderPending
+    | OrderActive
+    | OrderDone
+    | OrderSettled
+    deriving (Typeable, Generic)
+
+instance Show OrderStatus where
+    show OrderOpen    = "open"
+    show OrderPending = "pending"
+    show OrderActive  = "active"
+    show OrderDone    = "done"
+    show OrderSettled = "settled"
+
+instance ToJSON OrderStatus where
+    toJSON = String . T.pack . show
+
+instance FromJSON OrderStatus where
+    parseJSON = withText "OrderStatus" $ \s ->
+        case s of
+            "open"    -> pure OrderOpen
+            "pending" -> pure OrderPending
+            "active"  -> pure OrderActive
+            "done"    -> pure OrderDone
+            "settled" -> pure OrderSettled
+            _ -> fail $ T.unpack $ "'" <> s <> "' is not a valid order status."
