@@ -24,39 +24,31 @@ data Account
         , _accountBalance   :: Double
         , _accountAvailable :: Double
         , _accountHold      :: Double
+        , _accountMargin    :: Maybe MarginAccount
         }
-    | MarginAccount
-        { _accountId            :: AccountId
-        , _accountProfileId     :: ProfileId
-        , _accountCurrency      :: CurrencyId
-        , _accountBalance       :: Double
-        , _accountAvailable     :: Double
-        , _accountHold          :: Double
-        , _accountFundedAmount  :: Double
-        , _accountDefaultAmount :: Double
+    deriving (Show, Typeable, Generic)
+
+data MarginAccount
+    = MarginAccount
+        { _maccountFundedAmount  :: Double
+        , _maccountDefaultAmount :: Double
         }
     deriving (Show, Typeable, Generic)
 
 instance FromJSON Account where
-    parseJSON = withObject "Account" $ \o -> do
-        mar <- o .:? "margin_enabled"
-        if mar == (Just True)
-            then MarginAccount
-                <$> o .: "id"
-                <*> o .: "profile_id"
-                <*> o .: "currency"
-                <*> (o .: "balance" >>= textDouble)
-                <*> (o .: "available" >>= textDouble)
-                <*> (o .: "hold" >>= textDouble)
-                <*> (o .: "funded_amount" >>= textDouble)
-                <*> (o .: "default_amount" >>= textDouble)
-            else Account
-                <$> o .: "id"
-                <*> o .: "profile_id"
-                <*> o .: "currency"
-                <*> (o .: "balance" >>= textDouble)
-                <*> (o .: "available" >>= textDouble)
-                <*> (o .: "hold" >>= textDouble)
+    parseJSON = withObject "Account" $ \o -> do Account
+        <$> o .: "id"
+        <*> o .: "profile_id"
+        <*> o .: "currency"
+        <*> (o .: "balance" >>= textDouble)
+        <*> (o .: "available" >>= textDouble)
+        <*> (o .: "hold" >>= textDouble)
+        <*> do enabled <- o .:? "margin_enabled"
+               if enabled == (Just True)
+                then (\a b -> Just $ MarginAccount a b)
+                        <$> (o .: "funded_amount" >>= textDouble)
+                        <*> (o .: "default_amount" >>= textDouble)
+                else return Nothing
 
 data Entry
     = Entry
