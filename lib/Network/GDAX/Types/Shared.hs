@@ -361,4 +361,52 @@ instance FromJSON CoinbaseAccountType where
         case t of
             "wallet" -> pure CBTypeWallet
             "fiat" -> pure CBTypeFiat
-            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid coinbase account type."
+
+newtype ReportId = ReportId { unReportId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show ReportId where
+    show = show . unReportId
+
+data ReportType
+    = ReportFills
+    | ReportAccount
+    deriving (Typeable, Generic)
+
+instance Show ReportType where
+    show ReportFills   = "fills"
+    show ReportAccount = "account"
+
+instance ToJSON ReportType where
+    toJSON = String . T.pack . show
+
+instance FromJSON ReportType where
+    parseJSON = withText "ReportType" $ \t ->
+        case t of
+            "fills" -> pure ReportFills
+            "account" -> pure ReportAccount
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid report type."
+
+data ReportStatus
+    = ReportPending
+    | ReportCreating
+    | ReportReady
+    deriving (Typeable, Generic)
+
+instance Show ReportStatus where
+    show ReportPending  = "pending"
+    show ReportCreating = "creating"
+    show ReportReady    = "ready"
+
+instance ToJSON ReportStatus where
+    toJSON = String . T.pack . show
+
+instance FromJSON ReportStatus where
+    parseJSON = withText "ReportStatus" $ \t ->
+        case t of
+            "pending" -> pure ReportPending
+            "creating" -> pure ReportCreating
+            "ready" -> pure ReportReady
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid report status."
+

@@ -139,4 +139,7 @@ listCoinbaseAccounts = do
     g <- (^. gdax) <$> ask
     Explicit.listCoinbaseAccounts g
 
-
+createReport :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewReport -> m Report
+createReport nr = do
+    g <- (^. gdax) <$> ask
+    Explicit.createReport g nr

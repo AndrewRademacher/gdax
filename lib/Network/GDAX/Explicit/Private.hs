@@ -102,3 +102,6 @@ listPaymentMethods g = gdaxSignedGet g "/payment-methods" []
 
 listCoinbaseAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector CoinbaseAccount)
 listCoinbaseAccounts g = gdaxSignedGet g "/coinbase-accounts" []
+
+createReport :: (MonadIO m, MonadThrow m) => Gdax -> NewReport -> m Report
+createReport g nr = gdaxSignedPost g "/reports" [] nr

@@ -869,3 +869,54 @@ instance FromJSON SepaDepositInfo where
         <*> o .: "account_name"
         <*> o .: "account_address"
         <*> o .: "reference"
+
+data NewReport
+    = NewReport
+        { _nreportType      :: ReportType
+        , _nreportStartDate :: UTCTime
+        , _nreportEndDate   :: UTCTime
+        }
+    deriving (Show, Typeable, Generic)
+
+instance ToJSON NewReport where
+    toJSON NewReport{..} = object
+        [ "type" .= _nreportType
+        , "start_date" .= _nreportStartDate
+        , "end_date" .= _nreportEndDate
+        ]
+
+data Report
+    = Report
+        { _reportId          :: ReportId
+        , _reportType        :: ReportType
+        , _reportStatus      :: ReportStatus
+        , _reportCreatedAt   :: UTCTime
+        , _reportCompletedAt :: Maybe UTCTime
+        , _reportExpiresAt   :: UTCTime
+        , _reportFileUrl     :: Maybe Text
+        , _reportParams      :: ReportParams
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Report where
+    parseJSON = withObject "Report" $ \o -> Report
+        <$> o .: "id"
+        <*> o .: "type"
+        <*> o .: "status"
+        <*> o .: "created_at"
+        <*> o .: "completed_at"
+        <*> o .: "expires_at"
+        <*> o .: "file_url"
+        <*> o .: "params"
+
+data ReportParams
+    = ReportParams
+        { _rparamStartDate :: UTCTime
+        , _rparamEndDate   :: UTCTime
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON ReportParams where
+    parseJSON = withObject "ReportParmas" $ \o -> ReportParams
+        <$> o .: "start_date"
+        <*> o .: "end_date"
