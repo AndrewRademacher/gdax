@@ -104,3 +104,7 @@ closePosition r = do
     g <- (^. gdax) <$> ask
     Explicit.closePosition g r
 
+deposit :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Deposit -> m DepositReceipt
+deposit d = do
+    g <- (^. gdax) <$> ask
+    Explicit.deposit g d

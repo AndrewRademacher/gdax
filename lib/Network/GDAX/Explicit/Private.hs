@@ -81,3 +81,6 @@ closePosition :: (MonadIO m, MonadThrow m) => Gdax -> RepayOnly -> m ()
 closePosition g r = gdaxSignedPost g "/position/close" [("repay_only", str)] ()
     where
         str = if r then "true" else "false"
+
+deposit :: (MonadIO m, MonadThrow m) => Gdax -> Deposit -> m DepositReceipt
+deposit g d = gdaxSignedPost g "/deposits/payment-method" [] d

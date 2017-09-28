@@ -320,3 +320,14 @@ instance FromJSON PositionType where
             "short" -> pure PositionShort
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."
 
+newtype PaymentMethodId = PaymentMethodId { unPaymentMethodId :: Int64 }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show PaymentMethodId where
+    show = show . unPaymentMethodId
+
+newtype DepositId = DepositId { unDepositId :: Int64 }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show DepositId where
+    show = show . unDepositId

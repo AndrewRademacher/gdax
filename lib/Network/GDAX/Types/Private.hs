@@ -561,3 +561,34 @@ instance FromJSON PositionInfo where
         <*> o .: "size"
         <*> o .: "complement"
         <*> o .: "max_size"
+
+data Deposit
+    = Deposit
+        { _depositAmount        :: Double
+        , _depositCurrency      :: CurrencyId
+        , _depositPaymentMethod :: PaymentMethodId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance ToJSON Deposit where
+    toJSON Deposit{..} = object
+        [ "amount" .= _depositAmount
+        , "currency" .= _depositCurrency
+        , "payment_method_id" .= _depositPaymentMethod
+        ]
+
+data DepositReceipt
+    = DepositReceipt
+        { _dreceiptId       :: DepositId
+        , _dreceiptAmount   :: Double
+        , _dreceiptCurrency :: CurrencyId
+        , _dreceiptPayoutAt :: UTCTime
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON DepositReceipt where
+    parseJSON = withObject "DepositReceipt" $ \o -> DepositReceipt
+        <$> o .: "id"
+        <*> o .: "amount"
+        <*> o .: "currency"
+        <*> o .: "payput_at"
