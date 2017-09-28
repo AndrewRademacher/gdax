@@ -613,7 +613,6 @@ data CoinbaseDepositReceipt
         { _cdreceiptId       :: DepositId
         , _cdreceiptAmount   :: Double
         , _cdreceiptCurrency :: CurrencyId
-        , _cdreceiptPayoutAt :: UTCTime
         }
     deriving (Show, Typeable, Generic)
 
@@ -622,7 +621,6 @@ instance FromJSON CoinbaseDepositReceipt where
         <$> o .: "id"
         <*> o .: "amount"
         <*> o .: "currency"
-        <*> o .: "payput_at"
 
 data Withdraw
     = Withdraw
@@ -657,9 +655,9 @@ instance FromJSON WithdrawReceipt where
 
 data CoinbaseWithdraw
     = CoinbaseWithdraw
-        { _cwithdrawAmount        :: Double
-        , _cwithdrawCurrency      :: CurrencyId
-        , _cwithdrawPaymentMethod :: PaymentMethodId
+        { _cwithdrawAmount          :: Double
+        , _cwithdrawCurrency        :: CurrencyId
+        , _cwithdrawCoinbaseAccount :: AccountId
         }
     deriving (Show, Typeable, Generic)
 
@@ -667,7 +665,7 @@ instance ToJSON CoinbaseWithdraw where
     toJSON CoinbaseWithdraw{..} = object
         [ "amount" .= _cwithdrawAmount
         , "currency" .= _cwithdrawCurrency
-        , "payment_method_id" .= _cwithdrawPaymentMethod
+        , "payment_method_id" .= _cwithdrawCoinbaseAccount
         ]
 
 data CoinbaseWithdrawReceipt
@@ -675,7 +673,6 @@ data CoinbaseWithdrawReceipt
         { _cwreceiptId       :: WithdrawId
         , _cwreceiptAmount   :: Double
         , _cwreceiptCurrency :: CurrencyId
-        , _cwreceiptPayoutAt :: UTCTime
         }
     deriving (Show, Typeable, Generic)
 
@@ -684,5 +681,32 @@ instance FromJSON CoinbaseWithdrawReceipt where
         <$> o .: "id"
         <*> o .: "amount"
         <*> o .: "currency"
-        <*> o .: "payout_at"
 
+data CryptoWithdraw
+    = CryptoWithdraw
+        { _crwithdrawAmount          :: Double
+        , _crwithdrawCurrency        :: CurrencyId
+        , _crwithdrawCoinbaseAccount :: AccountId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance ToJSON CryptoWithdraw where
+    toJSON CryptoWithdraw{..} = object
+        [ "amount" .= _crwithdrawAmount
+        , "currency" .= _crwithdrawCurrency
+        , "payment_method_id" .= _crwithdrawCoinbaseAccount
+        ]
+
+data CryptoWithdrawReceipt
+    = CryptoWithdrawReceipt
+        { _crwreceiptId       :: WithdrawId
+        , _crwreceiptAmount   :: Double
+        , _crwreceiptCurrency :: CurrencyId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON CryptoWithdrawReceipt where
+    parseJSON = withObject "CryptoWithdrawReceipt" $ \o -> CryptoWithdrawReceipt
+        <$> o .: "id"
+        <*> o .: "amount"
+        <*> o .: "currency"

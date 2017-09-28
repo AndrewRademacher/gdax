@@ -123,3 +123,8 @@ withdrawCoinbase :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Coi
 withdrawCoinbase w = do
     g <- (^. gdax) <$> ask
     Explicit.withdrawCoinbase g w
+
+withdrawCrypto :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => CryptoWithdraw -> m CryptoWithdrawReceipt
+withdrawCrypto w = do
+    g <- (^. gdax) <$> ask
+    Explicit.withdrawCrypto g w
