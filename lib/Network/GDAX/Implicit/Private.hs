@@ -53,7 +53,7 @@ placeStopOrder no = do
     g <- (^. gdax) <$> ask
     Explicit.placeStopOrder g no
 
-cancelOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => OrderId -> m NewOrderConfirmation
+cancelOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => OrderId -> m ()
 cancelOrder oid = do
     g <- (^. gdax) <$> ask
     Explicit.cancelOrder g oid
