@@ -77,8 +77,6 @@ newtype Sequence = Sequence { unSequence :: Int64 }
 instance Show Sequence where
     show = show . unSequence
 
-
-
 newtype TradeId = TradeId { unTradeId :: Int64 }
     deriving (Eq, Ord, Enum, Typeable, Generic)
 
@@ -97,7 +95,14 @@ instance FromJSON TradeId where
 data Side
     = Buy
     | Sell
-    deriving (Show, Typeable, Generic)
+    deriving (Typeable, Generic)
+
+instance Show Side where
+    show Buy  = "buy"
+    show Sell = "sell"
+
+instance ToJSON Side where
+    toJSON = String . T.pack . show
 
 instance FromJSON Side where
     parseJSON = withText "Side" $ \t ->
@@ -148,3 +153,9 @@ newtype HoldId = HoldId { unHoldId :: UUID }
 
 instance Show HoldId where
     show = show . unHoldId
+
+newtype ClientOrderId = ClientOrderId { unClientOrderId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show ClientOrderId where
+    show = show . unClientOrderId

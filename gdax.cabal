@@ -50,6 +50,8 @@ library
                      , lens
                      , lens-aeson
                      , mtl
+                     , regex-tdfa
+                     , regex-tdfa-text
                      , scientific
                      , text
                      , time
