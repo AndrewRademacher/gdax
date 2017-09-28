@@ -24,6 +24,7 @@ module Network.GDAX.Core
     , gdaxGetWith
     , gdaxSignedGet
     , gdaxSignedPost
+    , gdaxSignedDelete
     ) where
 
 import           Control.Lens
@@ -154,6 +155,15 @@ gdaxSignedPost g path body = do
         opts = defaults & header "Content-Type" .~ [ "application/json" ]
                         & manager .~ Right (g ^. networkManager)
         bodyBS = CLBS.toStrict $ Aeson.encode body
+
+gdaxSignedDelete :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
+{-# INLINE gdaxSignedDelete #-}
+gdaxSignedDelete g path = do
+    signedOpts <- signOptions g "DELETE" path Nothing opts
+    res <- liftIO $ deleteWith signedOpts (g ^. restEndpoint <> path)
+    decodeResult res
+    where
+        opts = defaults & manager .~ Right (g ^. networkManager)
 
 decodeResult :: (MonadThrow m, FromJSON a) => Response CLBS.ByteString -> m a
 {-# INLINE decodeResult #-}

@@ -34,3 +34,6 @@ placeMarketOrder g no = gdaxSignedPost g "/orders" no
 
 placeStopOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewStopOrder -> m NewOrderConfirmation
 placeStopOrder g no = gdaxSignedPost g "/orders" no
+
+cancelOrder :: (MonadIO m, MonadThrow m) => Gdax -> OrderId -> m ()
+cancelOrder g oid = gdaxSignedDelete g ("/orders/" <> show oid)
