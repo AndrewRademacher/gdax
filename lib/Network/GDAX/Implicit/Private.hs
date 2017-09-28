@@ -143,3 +143,8 @@ createReport :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewRepo
 createReport nr = do
     g <- (^. gdax) <$> ask
     Explicit.createReport g nr
+
+getReport :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ReportId -> m Report
+getReport rid = do
+    g <- (^. gdax) <$> ask
+    Explicit.getReport g rid
