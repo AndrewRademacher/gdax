@@ -8,6 +8,7 @@
 module Network.GDAX.Types.Private where
 
 import           Data.Aeson
+import           Data.Int
 import           Data.Monoid
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
@@ -398,3 +399,53 @@ instance FromJSON Funding where
         <*> o .: "repaid_amount"
         <*> o .: "default_amount"
         <*> o .: "repaid_default"
+
+data NewMarginTransfer
+    = NewMarginTransfer
+        { _nmtMarginProfileId :: ProfileId
+        , _nmtType            :: MarginType
+        , _nmtCurrency        :: CurrencyId
+        , _nmtAmount          :: Double
+        }
+    deriving (Typeable, Generic)
+
+instance ToJSON NewMarginTransfer where
+    toJSON NewMarginTransfer{..} = object
+        [ "margin_profile_id" .= _nmtMarginProfileId
+        , "type" .= _nmtType
+        , "currency" .= _nmtCurrency
+        , "amount" .= _nmtAmount
+        ]
+
+data MarginTransfer
+    = MarginTransfer
+        { _mtCreatedAt       :: UTCTime
+        , _mtId              :: MarginTransferId
+        , _mtUserId          :: UserId
+        , _mtProfileId       :: ProfileId
+        , _mtMarginProfileId :: ProfileId
+        , _mtType            :: MarginType
+        , _mtAmount          :: Double
+        , _mtCurrency        :: CurrencyId
+        , _mtAccountId       :: AccountId
+        , _mtMarginAccountId :: AccountId
+        , _mtMarginProductId :: ProductId
+        , _mtStatus          :: MarginStatus
+        , _mtNonce           :: Int64
+        }
+
+instance FromJSON MarginTransfer where
+    parseJSON = withObject "MarginTransfer" $ \o -> MarginTransfer
+        <$> o .: "created_at"
+        <*> o .: "id"
+        <*> o .: "user_id"
+        <*> o .: "profile_id"
+        <*> o .: "margin_profile_id"
+        <*> o .: "type"
+        <*> o .: "amount"
+        <*> o .: "currency"
+        <*> o .: "accountId"
+        <*> o .: "margin_account_id"
+        <*> o .: "margin_product_id"
+        <*> o .: "status"
+        <*> o .: "nonce"

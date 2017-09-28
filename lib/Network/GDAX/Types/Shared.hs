@@ -234,3 +234,44 @@ instance FromJSON FundingStatus where
             "settled" -> pure FundingSettled
             "rejected" -> pure FundingRejected
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid funding status."
+
+data MarginType
+    = MarginDeposit
+    | MarginWithdraw
+    deriving (Typeable, Generic)
+
+instance Show MarginType where
+    show MarginDeposit  = "deposit"
+    show MarginWithdraw = "withdraw"
+
+instance ToJSON MarginType where
+    toJSON = String . T.pack . show
+
+instance FromJSON MarginType where
+    parseJSON = withText "MarginType" $ \t ->
+        case t of
+            "deposit"  -> pure MarginDeposit
+            "withdraw" -> pure MarginWithdraw
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin type."
+
+newtype MarginTransferId = MarginTransferId { unMarginTransferId :: UUID }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show MarginTransferId where
+    show = show . unMarginTransferId
+
+data MarginStatus
+    = MarginCompleted
+    deriving (Typeable, Generic)
+
+instance Show MarginStatus where
+    show MarginCompleted  = "completed"
+
+instance ToJSON MarginStatus where
+    toJSON = String . T.pack . show
+
+instance FromJSON MarginStatus where
+    parseJSON = withText "MarginStatus" $ \t ->
+        case t of
+            "completed"  -> pure MarginCompleted
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."

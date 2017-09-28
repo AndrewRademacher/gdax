@@ -89,3 +89,8 @@ repayFunding c a = do
     g <- (^. gdax) <$> ask
     Explicit.repayFunding g c a
 
+createMarginTransfer :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => NewMarginTransfer -> m MarginTransfer
+createMarginTransfer nmt = do
+    g <- (^. gdax) <$> ask
+    Explicit.createMarginTransfer g nmt
+

@@ -68,3 +68,6 @@ repayFunding g c a = gdaxSignedPost g "/funding/repay" params ()
         params = [ ("currency", T.pack (show c))
                  , ("amount", T.pack (show a))
                  ]
+
+createMarginTransfer :: (MonadIO m, MonadThrow m) => Gdax -> NewMarginTransfer -> m MarginTransfer
+createMarginTransfer g nmt = gdaxSignedPost g "/profiles/margin-transfer" [] nmt
