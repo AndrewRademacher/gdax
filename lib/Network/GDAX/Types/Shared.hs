@@ -331,3 +331,9 @@ newtype DepositId = DepositId { unDepositId :: Int64 }
 
 instance Show DepositId where
     show = show . unDepositId
+
+newtype WithdrawId = WithdrawId { unWithdrawId :: Int64 }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show WithdrawId where
+    show = show . unWithdrawId

@@ -87,3 +87,6 @@ deposit g d = gdaxSignedPost g "/deposits/payment-method" [] d
 
 depositCoinbase :: (MonadIO m, MonadThrow m) => Gdax -> CoinbaseDeposit -> m CoinbaseDepositReceipt
 depositCoinbase g d = gdaxSignedPost g "/deposits/coinbase-account" [] d
+
+withdraw :: (MonadIO m, MonadThrow m) => Gdax -> Withdraw -> m WithdrawReceipt
+withdraw g w = gdaxSignedPost g "/withdraws/payment-method" [] w

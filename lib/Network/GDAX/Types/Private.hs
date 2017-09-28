@@ -623,3 +623,34 @@ instance FromJSON CoinbaseDepositReceipt where
         <*> o .: "amount"
         <*> o .: "currency"
         <*> o .: "payput_at"
+
+data Withdraw
+    = Withdraw
+        { _withdrawAmount        :: Double
+        , _withdrawCurrency      :: CurrencyId
+        , _withdrawPaymentMethod :: PaymentMethodId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance ToJSON Withdraw where
+    toJSON Withdraw{..} = object
+        [ "amount" .= _withdrawAmount
+        , "currency" .= _withdrawCurrency
+        , "payment_method_id" .= _withdrawPaymentMethod
+        ]
+
+data WithdrawReceipt
+    = WithdrawReceipt
+        { _wreceiptId       :: WithdrawId
+        , _wreceiptAmount   :: Double
+        , _wreceiptCurrency :: CurrencyId
+        , _wreceiptPayoutAt :: UTCTime
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON WithdrawReceipt where
+    parseJSON = withObject "WithdrawReceipt" $ \o -> WithdrawReceipt
+        <$> o .: "id"
+        <*> o .: "amount"
+        <*> o .: "currency"
+        <*> o .: "payout_at"

@@ -113,3 +113,9 @@ depositCoinbase :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Coin
 depositCoinbase d = do
     g <- (^. gdax) <$> ask
     Explicit.depositCoinbase g d
+
+withdraw :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Withdraw -> m WithdrawReceipt
+withdraw w = do
+    g <- (^. gdax) <$> ask
+    Explicit.withdraw g w
+
