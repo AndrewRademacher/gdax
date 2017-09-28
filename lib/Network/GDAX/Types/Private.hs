@@ -342,3 +342,30 @@ instance FromJSON Order where
         <*> o .: "executed_value"
         <*> o .: "status"
         <*> o .: "settled"
+
+data Fill
+    = Fill
+        { _fillTradeId   :: TradeId
+        , _fillProductId :: ProductId
+        , _fillPrice     :: Double
+        , _fillSize      :: Double
+        , _fillOrderId   :: OrderId
+        , _fillCreatedAt :: UTCTime
+        , _fillLiquidity :: Liquidity
+        , _fillFee       :: Double
+        , _fillSettled   :: Bool
+        , _fillSide      :: Side
+        }
+
+instance FromJSON Fill where
+    parseJSON = withObject "Fill" $ \o -> Fill
+        <$> o .: "trade_id"
+        <*> o .: "product_id"
+        <*> o .: "price"
+        <*> o .: "size"
+        <*> o .: "order_id"
+        <*> o .: "created_at"
+        <*> o .: "liquidity"
+        <*> o .: "fee"
+        <*> o .: "settled"
+        <*> o .: "side"

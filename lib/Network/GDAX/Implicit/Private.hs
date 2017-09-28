@@ -73,3 +73,8 @@ getOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => OrderId -> 
 getOrder oid  = do
     g <- (^. gdax) <$> ask
     Explicit.getOrder g oid
+
+listFills :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Set OrderId -> Set ProductId -> m (Vector Fill)
+listFills oids pids  = do
+    g <- (^. gdax) <$> ask
+    Explicit.listFills g oids pids

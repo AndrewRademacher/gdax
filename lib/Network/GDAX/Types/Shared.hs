@@ -187,3 +187,22 @@ instance FromJSON OrderStatus where
             "done"    -> pure OrderDone
             "settled" -> pure OrderSettled
             _ -> fail $ T.unpack $ "'" <> s <> "' is not a valid order status."
+
+data Liquidity
+    = LiquidityMaker
+    | LiquidityTaker
+    deriving (Typeable, Generic)
+
+instance Show Liquidity where
+    show LiquidityMaker = "M"
+    show LiquidityTaker = "T"
+
+instance ToJSON Liquidity where
+    toJSON = String . T.pack . show
+
+instance FromJSON Liquidity where
+    parseJSON = withText "Liquidity" $ \t ->
+        case t of
+            "M" -> pure LiquidityMaker
+            "T" -> pure LiquidityTaker
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid liquidity."
