@@ -337,3 +337,9 @@ newtype WithdrawId = WithdrawId { unWithdrawId :: Int64 }
 
 instance Show WithdrawId where
     show = show . unWithdrawId
+
+newtype PaymentMethodType = PaymentMethodType { unPaymentMethodType :: Int64 }
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+
+instance Show PaymentMethodType where
+    show = show . unPaymentMethodType

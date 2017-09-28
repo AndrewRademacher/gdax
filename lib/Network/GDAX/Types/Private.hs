@@ -15,6 +15,7 @@ import           Data.Text                 (Text)
 import qualified Data.Text                 as T
 import           Data.Time
 import           Data.Typeable
+import           Data.Vector               (Vector)
 import           GHC.Generics
 import           Network.GDAX.Parsers
 import           Network.GDAX.Types.Shared
@@ -709,4 +710,76 @@ instance FromJSON CryptoWithdrawReceipt where
     parseJSON = withObject "CryptoWithdrawReceipt" $ \o -> CryptoWithdrawReceipt
         <$> o .: "id"
         <*> o .: "amount"
+        <*> o .: "currency"
+
+data PaymentMethod
+    = PaymentMethod
+        { _pmethId            :: PaymentMethodId
+        , _pmethType          :: PaymentMethodType
+        , _pmethName          :: Text
+        , _pmethCurrency      :: CurrencyId
+        , _pmethPrimaryBuy    :: Bool
+        , _pmethPrimarySell   :: Bool
+        , _pmethAllowBuy      :: Bool
+        , _pmethAllowSell     :: Bool
+        , _pmethAllowDeposit  :: Bool
+        , _pmethAllowWithdraw :: Bool
+        , _pmethLimits        :: Limits
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON PaymentMethod where
+    parseJSON = withObject "PaymentMethod" $ \o -> PaymentMethod
+        <$> o .: "id"
+        <*> o .: "type"
+        <*> o .: "name"
+        <*> o .: "currency"
+        <*> o .: "primary_buy"
+        <*> o .: "primary_sell"
+        <*> o .: "allow_buy"
+        <*> o .: "allow_sell"
+        <*> o .: "allow_deposit"
+        <*> o .: "allow_withdraw"
+        <*> o .: "limits"
+
+data Limits
+    = Limits
+        { _limitsBuy        :: Vector Limit
+        , _limitsInstantBuy :: Vector Limit
+        , _limitsSell       :: Vector Limit
+        , _limitsDeposit    :: Vector Limit
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Limits where
+    parseJSON = withObject "Limits" $ \o -> Limits
+        <$> o .: "buy"
+        <*> o .: "instant_buy"
+        <*> o .: "sell"
+        <*> o .: "deposit"
+
+data Limit
+    = Limit
+        { _limitPeriodInDays :: Word
+        , _limitTotal        :: LimitValue
+        , _limitRemaining    :: LimitValue
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Limit where
+    parseJSON = withObject "Limit" $ \o -> Limit
+        <$> o .: "period_in_days"
+        <*> o .: "total"
+        <*> o .: "remaining"
+
+data LimitValue
+    = LimitValue
+        { _lvalAmount   :: Double
+        , _lvalCurrency :: CurrencyId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON LimitValue where
+    parseJSON = withObject "LimitValue" $ \o -> LimitValue
+        <$> o .: "amount"
         <*> o .: "currency"

@@ -96,3 +96,6 @@ withdrawCoinbase g w = gdaxSignedPost g "/withdraws/coinbase" [] w
 
 withdrawCrypto :: (MonadIO m, MonadThrow m) => Gdax -> CryptoWithdraw -> m CryptoWithdrawReceipt
 withdrawCrypto g w = gdaxSignedPost g "/withdraws/crypto" [] w
+
+listPaymentMethods :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector PaymentMethod)
+listPaymentMethods g = gdaxSignedGet g "/payment-methods" []

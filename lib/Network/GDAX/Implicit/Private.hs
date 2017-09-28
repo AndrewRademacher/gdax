@@ -128,3 +128,9 @@ withdrawCrypto :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Crypt
 withdrawCrypto w = do
     g <- (^. gdax) <$> ask
     Explicit.withdrawCrypto g w
+
+listPaymentMethods :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m (Vector PaymentMethod)
+listPaymentMethods = do
+    g <- (^. gdax) <$> ask
+    Explicit.listPaymentMethods g
+
