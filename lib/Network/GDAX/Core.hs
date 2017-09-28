@@ -39,6 +39,7 @@ import qualified Data.ByteString.Base64     as Base64
 import qualified Data.ByteString.Char8      as CBS
 import qualified Data.ByteString.Lazy.Char8 as CLBS
 import           Data.Monoid
+import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import           Data.Time
 import           Data.Time.Clock.POSIX
@@ -156,14 +157,15 @@ gdaxSignedPost g path body = do
                         & manager .~ Right (g ^. networkManager)
         bodyBS = CLBS.toStrict $ Aeson.encode body
 
-gdaxSignedDelete :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> m b
+gdaxSignedDelete :: (MonadIO m, MonadThrow m, FromJSON b) => Gdax -> Path -> [(Text, Text)] -> m b
 {-# INLINE gdaxSignedDelete #-}
-gdaxSignedDelete g path = do
+gdaxSignedDelete g path par = do
     signedOpts <- signOptions g "DELETE" path Nothing opts
     res <- liftIO $ deleteWith signedOpts (g ^. restEndpoint <> path)
     decodeResult res
     where
         opts = defaults & manager .~ Right (g ^. networkManager)
+                        & params .~ par
 
 decodeResult :: (MonadThrow m, FromJSON a) => Response CLBS.ByteString -> m a
 {-# INLINE decodeResult #-}

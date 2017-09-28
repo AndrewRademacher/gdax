@@ -6,6 +6,7 @@ module Network.GDAX.Explicit.Private where
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
 import           Data.Monoid
+import qualified Data.Text                  as T
 import           Data.Vector                (Vector)
 import           Network.GDAX.Core
 import           Network.GDAX.Types.Private
@@ -36,4 +37,7 @@ placeStopOrder :: (MonadIO m, MonadThrow m) => Gdax -> NewStopOrder -> m NewOrde
 placeStopOrder g no = gdaxSignedPost g "/orders" no
 
 cancelOrder :: (MonadIO m, MonadThrow m) => Gdax -> OrderId -> m ()
-cancelOrder g oid = gdaxSignedDelete g ("/orders/" <> show oid)
+cancelOrder g oid = gdaxSignedDelete g ("/orders/" <> show oid) []
+
+cancelAllOrders :: (MonadIO m, MonadThrow m) => Gdax -> ProductId -> m (Vector OrderId)
+cancelAllOrders g pid = gdaxSignedDelete g ("/orders") [("product_id", T.pack (show pid))]

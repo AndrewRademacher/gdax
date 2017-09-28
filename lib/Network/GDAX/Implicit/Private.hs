@@ -57,3 +57,8 @@ cancelOrder :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => OrderId 
 cancelOrder oid = do
     g <- (^. gdax) <$> ask
     Explicit.cancelOrder g oid
+
+cancelAllOrders :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => ProductId -> m (Vector OrderId)
+cancelAllOrders pid = do
+    g <- (^. gdax) <$> ask
+    Explicit.cancelAllOrders g pid
