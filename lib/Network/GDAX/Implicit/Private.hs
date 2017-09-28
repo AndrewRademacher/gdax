@@ -94,3 +94,7 @@ createMarginTransfer nmt = do
     g <- (^. gdax) <$> ask
     Explicit.createMarginTransfer g nmt
 
+getPosition :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => m Position
+getPosition = do
+    g <- (^. gdax) <$> ask
+    Explicit.getPosition g

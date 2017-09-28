@@ -8,6 +8,7 @@
 module Network.GDAX.Types.Private where
 
 import           Data.Aeson
+import           Data.HashMap.Strict       (HashMap)
 import           Data.Int
 import           Data.Monoid
 import           Data.Text                 (Text)
@@ -407,7 +408,7 @@ data NewMarginTransfer
         , _nmtCurrency        :: CurrencyId
         , _nmtAmount          :: Double
         }
-    deriving (Typeable, Generic)
+    deriving (Show, Typeable, Generic)
 
 instance ToJSON NewMarginTransfer where
     toJSON NewMarginTransfer{..} = object
@@ -433,6 +434,7 @@ data MarginTransfer
         , _mtStatus          :: MarginStatus
         , _mtNonce           :: Int64
         }
+    deriving (Show, Typeable, Generic)
 
 instance FromJSON MarginTransfer where
     parseJSON = withObject "MarginTransfer" $ \o -> MarginTransfer
@@ -449,3 +451,113 @@ instance FromJSON MarginTransfer where
         <*> o .: "margin_product_id"
         <*> o .: "status"
         <*> o .: "nonce"
+
+data Position
+    = Position
+        { _posStatus       :: PositionStatus
+        , _posFunding      :: PositionFunding
+        , _posAccounts     :: HashMap Text PositionAccount -- ^ Text should be CurrencyId, but it will have to be fixed later.
+        , _posMarginCall   :: MarginCall
+        , _posUserId       :: UserId
+        , _posProfileId    :: ProfileId
+        , _posPositionInfo :: PositionInfo
+        , _posProductId    :: ProductId
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON Position where
+    parseJSON = withObject "Position" $ \o -> Position
+        <$> o .: "status"
+        <*> o .: "funding"
+        <*> o .: "accounts"
+        <*> o .: "margin_call"
+        <*> o .: "user_id"
+        <*> o .: "profile_id"
+        <*> o .: "position"
+        <*> o .: "product_id"
+
+data PositionFunding
+    = PositionFunding
+        { _posfunMaxFundingValue   :: Double
+        , _posfunFundingValue      :: Double
+        , _posfunOldestOutstanding :: OutstandingFunding
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON PositionFunding where
+    parseJSON = withObject "PositionFunding" $ \o -> PositionFunding
+        <$> o .: "max_funding_value"
+        <*> o .: "funding_value"
+        <*> o .: "oldest_outstanding"
+
+data OutstandingFunding
+    = OutstandingFunding
+        { _ofunId        :: FundingId
+        , _ofunOrderId   :: OrderId
+        , _ofunCreatedAt :: UTCTime
+        , _ofunCurrency  :: CurrencyId
+        , _ofunAccountId :: AccountId
+        , _ofunAmount    :: Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON OutstandingFunding where
+    parseJSON = withObject "OutstandingFunding" $ \o -> OutstandingFunding
+        <$> o .: "id"
+        <*> o .: "order_id"
+        <*> o .: "created_at"
+        <*> o .: "currency"
+        <*> o .: "account_id"
+        <*> o .: "amount"
+
+data PositionAccount
+    = PositionAccount
+        { _paccountId            :: AccountId
+        , _paccountBalance       :: Double
+        , _paccountHold          :: Double
+        , _paccountFundedAmount  :: Double
+        , _paccountDefaultAmount :: Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON PositionAccount where
+    parseJSON = withObject "PositionAccount" $ \o -> PositionAccount
+        <$> o .: "id"
+        <*> o .: "balance"
+        <*> o .: "hold"
+        <*> o .: "funded_amount"
+        <*> o .: "default_amount"
+
+data MarginCall
+    = MarginCall
+        { _mcallActive :: Bool
+        , _mcallPrice  :: Double
+        , _mcallSide   :: Side
+        , _mcallSize   :: Double
+        , _mcallFunds  :: Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON MarginCall where
+    parseJSON = withObject "MarginCall" $ \o -> MarginCall
+        <$> o .: "active"
+        <*> o .: "price"
+        <*> o .: "side"
+        <*> o .: "size"
+        <*> o .: "funds"
+
+data PositionInfo
+    = PositionInfo
+        { _pinfoType       :: PositionType
+        , _pinfoSize       :: Double
+        , _pinfoComplement :: Double
+        , _pinfoMaxSize    :: Double
+        }
+    deriving (Show, Typeable, Generic)
+
+instance FromJSON PositionInfo where
+    parseJSON = withObject "PositionInfo" $ \o -> PositionInfo
+        <$> o .: "type"
+        <*> o .: "size"
+        <*> o .: "complement"
+        <*> o .: "max_size"

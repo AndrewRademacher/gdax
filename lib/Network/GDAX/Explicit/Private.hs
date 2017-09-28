@@ -71,3 +71,6 @@ repayFunding g c a = gdaxSignedPost g "/funding/repay" params ()
 
 createMarginTransfer :: (MonadIO m, MonadThrow m) => Gdax -> NewMarginTransfer -> m MarginTransfer
 createMarginTransfer g nmt = gdaxSignedPost g "/profiles/margin-transfer" [] nmt
+
+getPosition :: (MonadIO m, MonadThrow m) => Gdax -> m Position
+getPosition g = gdaxSignedGet g "/position" []

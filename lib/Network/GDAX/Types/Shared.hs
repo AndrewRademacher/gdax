@@ -275,3 +275,48 @@ instance FromJSON MarginStatus where
         case t of
             "completed"  -> pure MarginCompleted
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."
+
+data PositionStatus
+    = PositionActive
+    | PositionPending
+    | PositionLocked
+    | PositionDefault
+    deriving (Typeable, Generic)
+
+instance Show PositionStatus where
+    show PositionActive  = "active"
+    show PositionPending = "pending"
+    show PositionLocked  = "locked"
+    show PositionDefault = "default"
+
+instance ToJSON PositionStatus where
+    toJSON = String . T.pack . show
+
+instance FromJSON PositionStatus where
+    parseJSON = withText "PositionStatus" $ \t ->
+        case t of
+            "active" -> pure PositionActive
+            "pending" -> pure PositionPending
+            "locked" -> pure PositionLocked
+            "default" -> pure PositionDefault
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."
+
+data PositionType
+    = PositionLong
+    | PositionShort
+    deriving (Typeable, Generic)
+
+instance Show PositionType where
+    show PositionLong  = "long"
+    show PositionShort = "short"
+
+instance ToJSON PositionType where
+    toJSON = String . T.pack . show
+
+instance FromJSON PositionType where
+    parseJSON = withText "PositionType" $ \t ->
+        case t of
+            "long" -> pure PositionLong
+            "short" -> pure PositionShort
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."
+
