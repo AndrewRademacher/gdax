@@ -84,3 +84,6 @@ closePosition g r = gdaxSignedPost g "/position/close" [("repay_only", str)] ()
 
 deposit :: (MonadIO m, MonadThrow m) => Gdax -> Deposit -> m DepositReceipt
 deposit g d = gdaxSignedPost g "/deposits/payment-method" [] d
+
+depositCoinbase :: (MonadIO m, MonadThrow m) => Gdax -> CoinbaseDeposit -> m CoinbaseDepositReceipt
+depositCoinbase g d = gdaxSignedPost g "/deposits/coinbase-account" [] d

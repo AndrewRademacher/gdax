@@ -108,3 +108,8 @@ deposit :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => Deposit -> m
 deposit d = do
     g <- (^. gdax) <$> ask
     Explicit.deposit g d
+
+depositCoinbase :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => CoinbaseDeposit -> m CoinbaseDepositReceipt
+depositCoinbase d = do
+    g <- (^. gdax) <$> ask
+    Explicit.depositCoinbase g d
