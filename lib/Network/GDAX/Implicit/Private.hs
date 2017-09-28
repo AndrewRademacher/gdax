@@ -119,3 +119,7 @@ withdraw w = do
     g <- (^. gdax) <$> ask
     Explicit.withdraw g w
 
+withdrawCoinbase :: (MonadIO m, MonadThrow m, MonadReader e m, HasGdax e) => CoinbaseWithdraw -> m CoinbaseWithdrawReceipt
+withdrawCoinbase w = do
+    g <- (^. gdax) <$> ask
+    Explicit.withdrawCoinbase g w
