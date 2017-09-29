@@ -5,7 +5,6 @@ module Network.GDAX.Explicit.Private where
 
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
-import           Data.Aeson                 (Value)
 import           Data.Monoid
 import           Data.Set                   (Set)
 import qualified Data.Set                   as Set
@@ -90,19 +89,16 @@ depositCoinbase :: (MonadIO m, MonadThrow m) => Gdax -> CoinbaseDeposit -> m Coi
 depositCoinbase g d = gdaxSignedPost g "/deposits/coinbase-account" [] d
 
 withdraw :: (MonadIO m, MonadThrow m) => Gdax -> Withdraw -> m WithdrawReceipt
-withdraw g w = gdaxSignedPost g "/withdraws/payment-method" [] w
+withdraw g w = gdaxSignedPost g "/withdrawals/payment-method" [] w
 
 withdrawCoinbase :: (MonadIO m, MonadThrow m) => Gdax -> CoinbaseWithdraw -> m CoinbaseWithdrawReceipt
-withdrawCoinbase g w = gdaxSignedPost g "/withdraws/coinbase" [] w
+withdrawCoinbase g w = gdaxSignedPost g "/withdrawals/coinbase-account" [] w
 
 withdrawCrypto :: (MonadIO m, MonadThrow m) => Gdax -> CryptoWithdraw -> m CryptoWithdrawReceipt
-withdrawCrypto g w = gdaxSignedPost g "/withdraws/crypto" [] w
+withdrawCrypto g w = gdaxSignedPost g "/withdrawals/crypto" [] w
 
 listPaymentMethods :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector PaymentMethod)
 listPaymentMethods g = gdaxSignedGet g "/payment-methods" []
-
-listPaymentMethods' :: (MonadIO m, MonadThrow m) => Gdax -> m Value
-listPaymentMethods' g = gdaxSignedGet g "/payment-methods" []
 
 listCoinbaseAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector CoinbaseAccount)
 listCoinbaseAccounts g = gdaxSignedGet g "/coinbase-accounts" []

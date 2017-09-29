@@ -112,7 +112,7 @@ instance FromJSON Side where
             _      -> fail "Side was not either buy or sell."
 
 newtype CurrencyId = CurrencyId { unCurrencyId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show CurrencyId where
     show = show . unCurrencyId
@@ -326,13 +326,13 @@ newtype PaymentMethodId = PaymentMethodId { unPaymentMethodId :: UUID }
 instance Show PaymentMethodId where
     show = show . unPaymentMethodId
 
-newtype DepositId = DepositId { unDepositId :: Int64 }
+newtype DepositId = DepositId { unDepositId :: UUID }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
 
 instance Show DepositId where
     show = show . unDepositId
 
-newtype WithdrawId = WithdrawId { unWithdrawId :: Int64 }
+newtype WithdrawId = WithdrawId { unWithdrawId :: UUID }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
 
 instance Show WithdrawId where

@@ -6,8 +6,8 @@ module Network.GDAX.Test.Private
     ) where
 
 import           Control.Lens
-import           Data.Aeson.Encode.Pretty
-import qualified Data.ByteString.Lazy     as LBS
+import qualified Data.HashMap.Strict     as Map
+import qualified Data.Vector.Generic     as V
 import           Network.GDAX.Explicit
 import           Network.GDAX.Test.Types
 import           Test.Tasty
@@ -36,16 +36,34 @@ case_viewAccounts e = testCaseSteps "view_account" $ \step -> do
 
 case_listPaymentMethods :: Env -> TestTree
 case_listPaymentMethods e = testCase "list_payment_methods" $ do
-    methods <- listPaymentMethods (e ^. sandbox)
+    _methods <- listPaymentMethods (e ^. sandbox)
     return ()
 
 case_listCoinbaseAccounts :: Env -> TestTree
 case_listCoinbaseAccounts e = testCase "list_coinbase_accounts" $ do
-    cbaseAccounts <- listCoinbaseAccounts (e ^. sandbox)
+    _cbaseAccounts <- listCoinbaseAccounts (e ^. sandbox)
     return ()
 
 case_useCoinbaseAccount :: Env -> TestTree
 case_useCoinbaseAccount e = testCaseSteps "use_coinbase_account" $ \step -> do
-    accounts <- listCoinbaseAccounts (e ^. sandbox)
+    step "Get account list."
+    accountMap <- getAccountMap
+    let (Just usd) = Map.lookup "USD Wallet" accountMap
+        (Just btc) = Map.lookup "Fake" accountMap
+
+    step "Make USD deposit."
+    _rDepositUSD <- depositCoinbase gdax (CoinbaseDeposit 10000 "USD" (_cbaccountId usd))
+
+    step "Make BTC deposit."
+    _rDepositBTC <- depositCoinbase gdax (CoinbaseDeposit 10 "BTC" (_cbaccountId btc))
+
+    step "Make USD withdraw."
+    _rWithdrawUSD <- withdrawCoinbase gdax (CoinbaseWithdraw 10000 "USD" (_cbaccountId usd))
+
+    step "Make BTC withdraw."
+    _rWithdrawBTC <- withdrawCoinbase gdax (CoinbaseWithdraw 10 "BTC" (_cbaccountId btc))
+
     return ()
-    -- print accounts
+    where
+        gdax = e ^. sandbox
+        getAccountMap = Map.fromList . V.toList . fmap (\a -> (_cbaccountName a, a)) <$> listCoinbaseAccounts gdax

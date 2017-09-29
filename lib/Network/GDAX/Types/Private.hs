@@ -590,7 +590,7 @@ data DepositReceipt
 instance FromJSON DepositReceipt where
     parseJSON = withObject "DepositReceipt" $ \o -> DepositReceipt
         <$> o .: "id"
-        <*> o .: "amount"
+        <*> (o .: "amount" >>= textRead)
         <*> o .: "currency"
         <*> o .: "payput_at"
 
@@ -620,7 +620,7 @@ data CoinbaseDepositReceipt
 instance FromJSON CoinbaseDepositReceipt where
     parseJSON = withObject "CoinbaseDepositReceipt" $ \o -> CoinbaseDepositReceipt
         <$> o .: "id"
-        <*> o .: "amount"
+        <*> (o .: "amount" >>= textRead)
         <*> o .: "currency"
 
 data Withdraw
@@ -650,7 +650,7 @@ data WithdrawReceipt
 instance FromJSON WithdrawReceipt where
     parseJSON = withObject "WithdrawReceipt" $ \o -> WithdrawReceipt
         <$> o .: "id"
-        <*> o .: "amount"
+        <*> (o .: "amount" >>= textRead)
         <*> o .: "currency"
         <*> o .: "payout_at"
 
@@ -666,7 +666,7 @@ instance ToJSON CoinbaseWithdraw where
     toJSON CoinbaseWithdraw{..} = object
         [ "amount" .= _cwithdrawAmount
         , "currency" .= _cwithdrawCurrency
-        , "payment_method_id" .= _cwithdrawCoinbaseAccount
+        , "coinbase_account_id" .= _cwithdrawCoinbaseAccount
         ]
 
 data CoinbaseWithdrawReceipt
@@ -680,7 +680,7 @@ data CoinbaseWithdrawReceipt
 instance FromJSON CoinbaseWithdrawReceipt where
     parseJSON = withObject "CoinbaseWithdrawReceipt" $ \o -> CoinbaseWithdrawReceipt
         <$> o .: "id"
-        <*> o .: "amount"
+        <*> (o .: "amount" >>= textRead)
         <*> o .: "currency"
 
 data CryptoWithdraw
@@ -709,7 +709,7 @@ data CryptoWithdrawReceipt
 instance FromJSON CryptoWithdrawReceipt where
     parseJSON = withObject "CryptoWithdrawReceipt" $ \o -> CryptoWithdrawReceipt
         <$> o .: "id"
-        <*> o .: "amount"
+        <*> (o .: "amount" >>= textRead)
         <*> o .: "currency"
 
 data PaymentMethod

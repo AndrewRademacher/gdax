@@ -115,6 +115,7 @@ test-suite test-gdax
                       , tasty-hunit
                       , text
                       , time
+                      , unordered-containers
                       , vector
                       , websockets
                       , wuss
