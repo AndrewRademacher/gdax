@@ -17,7 +17,8 @@ tests :: Env -> TestTree
 tests e = testGroup "Private"
     [ case_viewAccounts e
     , case_listPaymentMethods e
-    -- , case_useBankAccount e
+    , case_listCoinbaseAccounts e
+    , case_useCoinbaseAccount e
     ]
 
 case_viewAccounts :: Env -> TestTree
@@ -38,7 +39,11 @@ case_listPaymentMethods e = testCase "listPaymentMethods" $ do
     methods <- listPaymentMethods (e ^. sandbox)
     return ()
 
--- case_useBankAccount :: Env -> TestTree
--- case_useBankAccount e = testCaseSteps "Use Bank Account" $ \step -> do
---     step "Deposit from bank account."
---     deposit
+case_listCoinbaseAccounts :: Env -> TestTree
+case_listCoinbaseAccounts e = testCase "listCoinbaseAccounts" $ do
+    cbaseAccounts <- listCoinbaseAccounts (e ^. sandbox)
+    return ()
+
+case_useCoinbaseAccount :: Env -> TestTree
+case_useCoinbaseAccount e = testCaseSteps "Use Coinbase Account" $ \step -> do
+    return ()

@@ -802,7 +802,7 @@ instance FromJSON CoinbaseAccount where
     parseJSON = withObject "CoinbaseAccount" $ \o -> CoinbaseAccount
         <$> o .: "id"
         <*> o .: "name"
-        <*> o .: "balance"
+        <*> (o .: "balance" >>= textDouble)
         <*> o .: "currency"
         <*> o .: "type"
         <*> o .: "primary"
@@ -825,8 +825,8 @@ data WireDepositInfo
 
 instance FromJSON WireDepositInfo where
     parseJSON = withObject "WireDepositInfo" $ \o -> WireDepositInfo
-        <$> o .: "account_number"
-        <*> o .: "routing_number"
+        <$> (o .: "account_number" >>= textRead)
+        <*> (o .: "routing_number" >>= textRead)
         <*> o .: "bank_name"
         <*> o .: "bank_address"
         <*> o .: "bank_country"
