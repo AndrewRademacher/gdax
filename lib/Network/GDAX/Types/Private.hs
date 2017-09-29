@@ -47,14 +47,14 @@ instance FromJSON Account where
         <$> o .: "id"
         <*> o .: "profile_id"
         <*> o .: "currency"
-        <*> (o .: "balance" >>= textDouble)
-        <*> (o .: "available" >>= textDouble)
-        <*> (o .: "hold" >>= textDouble)
+        <*> (o .: "balance" >>= textRead)
+        <*> (o .: "available" >>= textRead)
+        <*> (o .: "hold" >>= textRead)
         <*> do enabled <- o .:? "margin_enabled"
                if enabled == (Just True)
                 then (\a b -> Just $ MarginAccount a b)
-                        <$> (o .: "funded_amount" >>= textDouble)
-                        <*> (o .: "default_amount" >>= textDouble)
+                        <$> (o .: "funded_amount" >>= textRead)
+                        <*> (o .: "default_amount" >>= textRead)
                 else return Nothing
 
 data Entry
@@ -73,8 +73,8 @@ instance FromJSON Entry where
         <$> o .: "id"
         <*> o .: "type"
         <*> o .: "created_at"
-        <*> (o .: "amount" >>= textDouble)
-        <*> (o .: "balance" >>= textDouble)
+        <*> (o .: "amount" >>= textRead)
+        <*> (o .: "balance" >>= textRead)
         <*> o .: "details"
 
 data EntryDetails
@@ -781,7 +781,7 @@ data LimitValue
 
 instance FromJSON LimitValue where
     parseJSON = withObject "LimitValue" $ \o -> LimitValue
-        <$> (o .: "amount" >>= textDouble)
+        <$> (o .: "amount" >>= textRead)
         <*> o .: "currency"
 
 data CoinbaseAccount
@@ -802,7 +802,7 @@ instance FromJSON CoinbaseAccount where
     parseJSON = withObject "CoinbaseAccount" $ \o -> CoinbaseAccount
         <$> o .: "id"
         <*> o .: "name"
-        <*> (o .: "balance" >>= textDouble)
+        <*> (o .: "balance" >>= textRead)
         <*> o .: "currency"
         <*> o .: "type"
         <*> o .: "primary"

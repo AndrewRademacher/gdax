@@ -171,14 +171,14 @@ instance FromJSON Ticker where
     parseJSON = withObjectOfType "Ticker" "ticker" $ \o -> Ticker
         <$> o .: "sequence"
         <*> o .: "product_id"
-        <*> (o .: "price" >>= textDouble)
-        <*> (o .: "open_24h" >>= textDouble)
-        <*> (o .: "volume_24h" >>= textDouble)
-        <*> (o .: "low_24h" >>= textDouble)
-        <*> (o .: "high_24h" >>= textDouble)
-        <*> (o .: "volume_30d" >>= textDouble)
-        <*> (o .: "best_bid" >>= textDouble)
-        <*> (o .: "best_ask" >>= textDouble)
+        <*> (o .: "price" >>= textRead)
+        <*> (o .: "open_24h" >>= textRead)
+        <*> (o .: "volume_24h" >>= textRead)
+        <*> (o .: "low_24h" >>= textRead)
+        <*> (o .: "high_24h" >>= textRead)
+        <*> (o .: "volume_30d" >>= textRead)
+        <*> (o .: "best_bid" >>= textRead)
+        <*> (o .: "best_ask" >>= textRead)
 
 data Level2Snapshot
     = Level2Snapshot
@@ -262,8 +262,8 @@ instance FromJSON Match where
                 <*> o .: "product_id"
                 <*> o .: "sequence"
                 <*> o .: "side"
-                <*> (o .: "size" >>= textDouble)
-                <*> (o .: "price" >>= textDouble)
+                <*> (o .: "size" >>= textRead)
+                <*> (o .: "price" >>= textRead)
 
 -- Full Book Messages
 
@@ -296,15 +296,15 @@ instance FromJSON Received where
                 <*> o .: "product_id"
                 <*> o .: "sequence"
                 <*> o .: "order_id"
-                <*> (o .: "size" >>= textDouble)
-                <*> (o .: "price" >>= textDouble)
+                <*> (o .: "size" >>= textRead)
+                <*> (o .: "price" >>= textRead)
                 <*> o .: "side"
             OrderMarket -> ReceivedMarket
                 <$> o .: "time"
                 <*> o .: "product_id"
                 <*> o .: "sequence"
                 <*> o .: "order_id"
-                <*> (o .: "funds" >>= textDouble)
+                <*> (o .: "funds" >>= textRead)
                 <*> o .: "side"
 
 data Reason
@@ -341,8 +341,8 @@ instance FromJSON Open where
         <*> o .: "product_id"
         <*> o .: "order_id"
         <*> o .: "sequence"
-        <*> (o .: "price" >>= textDouble)
-        <*> (o .: "remaining_size" >>= textDouble)
+        <*> (o .: "price" >>= textRead)
+        <*> (o .: "remaining_size" >>= textRead)
         <*> o .: "side"
 
 data Done
@@ -367,7 +367,7 @@ instance FromJSON Done where
         <*> o .: "order_id"
         <*> o .: "reason"
         <*> o .: "side"
-        <*> (o .: "remaining_size" >>= textDouble)
+        <*> (o .: "remaining_size" >>= textRead)
 
 -- Match implemented previously
 
@@ -450,19 +450,19 @@ instance FromJSON MarginProfileUpdate where
         <*> o .: "profile_id"
         <*> o .: "nonce"
         <*> o .: "position"
-        <*> (o .: "position_size" >>= textDouble)
-        <*> (o .: "position_compliement" >>= textDouble)
-        <*> (o .: "position_max_size" >>= textDouble)
+        <*> (o .: "position_size" >>= textRead)
+        <*> (o .: "position_compliement" >>= textRead)
+        <*> (o .: "position_max_size" >>= textRead)
         <*> o .: "call_side"
-        <*> (o .: "call_price" >>= textDouble)
-        <*> (o .: "call_size" >>= textDouble)
-        <*> (o .: "call_funds" >>= textDouble)
+        <*> (o .: "call_price" >>= textRead)
+        <*> (o .: "call_size" >>= textRead)
+        <*> (o .: "call_funds" >>= textRead)
         <*> o .: "covered"
         <*> o .: "next_expire_time"
-        <*> (o .: "base_balance" >>= textDouble)
-        <*> (o .: "base_funding" >>= textDouble)
-        <*> (o .: "quote_balance" >>= textDouble)
-        <*> (o .: "quote_funding" >>= textDouble)
+        <*> (o .: "base_balance" >>= textRead)
+        <*> (o .: "base_funding" >>= textRead)
+        <*> (o .: "quote_balance" >>= textRead)
+        <*> (o .: "quote_funding" >>= textRead)
         <*> o .: "private"
 
 data Activate
@@ -491,10 +491,10 @@ instance FromJSON Activate where
         <*> o .: "order_id"
         <*> o .: "stop_type"
         <*> o .: "side"
-        <*> (o .: "stop_price" >>= textDouble)
-        <*> (o .: "size" >>= textDouble)
-        <*> (o .: "funds" >>= textDouble)
-        <*> (o .: "taker_fee_rate" >>= textDouble)
+        <*> (o .: "stop_price" >>= textRead)
+        <*> (o .: "size" >>= textRead)
+        <*> (o .: "funds" >>= textRead)
+        <*> (o .: "taker_fee_rate" >>= textRead)
         <*> o .: "private"
 
 -- Sum Type

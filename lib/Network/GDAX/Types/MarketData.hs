@@ -40,9 +40,9 @@ instance FromJSON Product where
         <$> o .: "id"
         <*> o .: "base_currency"
         <*> o .: "quote_currency"
-        <*> (o .: "base_min_size" >>= textDouble)
-        <*> (o .: "base_max_size" >>= textDouble)
-        <*> (o .: "quote_increment" >>= textDouble)
+        <*> (o .: "base_min_size" >>= textRead)
+        <*> (o .: "base_max_size" >>= textRead)
+        <*> (o .: "quote_increment" >>= textRead)
         <*> o .: "display_name"
         <*> o .: "margin_enabled"
 
@@ -137,11 +137,11 @@ data Tick
 instance FromJSON Tick where
     parseJSON = withObject "Tick" $ \o -> Tick
         <$> o .: "trade_id"
-        <*> (o .: "price" >>= textDouble)
-        <*> (o .: "size" >>= textDouble)
-        <*> (o .: "bid" >>= textDouble)
-        <*> (o .: "ask" >>= textDouble)
-        <*> (o .: "volume" >>= textDouble)
+        <*> (o .: "price" >>= textRead)
+        <*> (o .: "size" >>= textRead)
+        <*> (o .: "bid" >>= textRead)
+        <*> (o .: "ask" >>= textRead)
+        <*> (o .: "volume" >>= textRead)
         <*> o .: "time"
 
 -- Trade
@@ -160,8 +160,8 @@ instance FromJSON Trade where
     parseJSON = withObject "Trade" $ \o -> Trade
         <$> o .: "trade_id"
         <*> o .: "time"
-        <*> (o .: "price" >>= textDouble)
-        <*> (o .: "size" >>= textDouble)
+        <*> (o .: "price" >>= textRead)
+        <*> (o .: "size" >>= textRead)
         <*> o .: "side"
 
 -- Candles
@@ -224,4 +224,4 @@ instance FromJSON Currency where
     parseJSON = withObject "Currency" $ \o -> Currency
         <$> o .: "id"
         <*> o .: "name"
-        <*> (o .: "min_size" >>= textDouble)
+        <*> (o .: "min_size" >>= textRead)

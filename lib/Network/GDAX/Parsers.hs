@@ -19,25 +19,13 @@ textScientific = withText "Text Scientific" $ \t ->
 
 textMaybeDouble :: Maybe Value -> Parser (Maybe Double)
 textMaybeDouble Nothing  = return Nothing
-textMaybeDouble (Just v) = Just <$> textDouble v
+textMaybeDouble (Just v) = Just <$> textRead v
 
 textRead :: (Read a) => Value -> Parser a
 textRead = withText "Text Read" $ \t ->
     case readMaybe (T.unpack t) of
         Just n  -> pure n
         Nothing -> fail "Could not read value from string."
-
-textInteger :: Value -> Parser Integer
-textInteger = withText "Text Integer" $ \t ->
-    case readMaybe (T.unpack t) of
-        Just n  -> pure n
-        Nothing -> fail "Could not parse string integer."
-
-textDouble :: Value -> Parser Double
-textDouble = withText "Text Double" $ \t ->
-    case readMaybe (T.unpack t) of
-        Just n  -> pure n
-        Nothing -> fail "Could not parse string double."
 
 newtype StringDouble = StringDouble { unStringDouble :: Double }
 
