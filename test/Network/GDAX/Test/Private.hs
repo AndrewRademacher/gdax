@@ -24,4 +24,7 @@ case_viewAccounts e = testCaseSteps "ViewAccount" $ \step -> do
     step "getAccounts (indavidually for each)"
     _singles <- mapM (getAccount (e ^. sandbox) . _accountId) accounts
 
+    step "getAccountHistory (indavidually for each)"
+    _histories <- mapM (getAccountHistory (e ^. sandbox) . _accountId) accounts
+
     return ()
