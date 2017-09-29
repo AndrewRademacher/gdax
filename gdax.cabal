@@ -46,6 +46,7 @@ library
                      , containers
                      , cryptohash
                      , exceptions
+                     , hashable
                      , http-client
                      , http-client-tls
                      , lens

@@ -6,6 +6,7 @@
 module Network.GDAX.Types.Shared where
 
 import           Data.Aeson
+import           Data.Hashable
 import           Data.Int
 import           Data.Monoid
 import           Data.Scientific
@@ -18,25 +19,25 @@ import           GHC.Generics
 import           Text.Read       (readMaybe)
 
 newtype AccountId = AccountId { unAccountId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show AccountId where
     show = show . unAccountId
 
 newtype UserId = UserId { unUserId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString, Hashable)
 
 instance Show UserId where
     show = T.unpack . unUserId
 
 newtype ProfileId = ProfileId { unProfileId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show ProfileId where
     show = show . unProfileId
 
 newtype OrderId = OrderId { unOrderId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show OrderId where
     show = show . unOrderId
@@ -46,6 +47,8 @@ data OrderType
     = OrderLimit
     | OrderMarket
     deriving (Typeable, Generic)
+
+instance Hashable OrderType
 
 instance Show OrderType where
     show OrderLimit  = "limit"
@@ -59,25 +62,25 @@ instance FromJSON OrderType where
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid order type."
 
 newtype StopType = StopType { unStopType :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString, Hashable)
 
 instance Show StopType where
     show = T.unpack . unStopType
 
 newtype ProductId = ProductId { unProductId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString, Hashable)
 
 instance Show ProductId where
     show = T.unpack . unProductId
 
 newtype Sequence = Sequence { unSequence :: Int64 }
-    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show Sequence where
     show = show . unSequence
 
 newtype TradeId = TradeId { unTradeId :: Int64 }
-    deriving (Eq, Ord, Enum, Typeable, Generic)
+    deriving (Eq, Ord, Enum, Typeable, Generic, Hashable)
 
 instance Show TradeId where
     show = show . unTradeId
@@ -96,6 +99,8 @@ data Side
     | Sell
     deriving (Typeable, Generic)
 
+instance Hashable Side
+
 instance Show Side where
     show Buy  = "buy"
     show Sell = "sell"
@@ -111,13 +116,13 @@ instance FromJSON Side where
             _      -> fail "Side was not either buy or sell."
 
 newtype CurrencyId = CurrencyId { unCurrencyId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString, Hashable)
 
 instance Show CurrencyId where
     show = T.unpack . unCurrencyId
 
 newtype EntryId = EntryId { unEntryId :: Int64 }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show EntryId where
     show = show . unEntryId
@@ -127,6 +132,8 @@ data EntryType
     | EntryFee
     | EntryTransfer
     deriving (Eq, Typeable, Generic)
+
+instance Hashable EntryType
 
 instance Show EntryType where
     show EntryMatch    = "match"
@@ -142,19 +149,19 @@ instance FromJSON EntryType where
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid entry type."
 
 newtype TransferId = TransferId { unTransferId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show TransferId where
     show = show . unTransferId
 
 newtype HoldId = HoldId { unHoldId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show HoldId where
     show = show . unHoldId
 
 newtype ClientOrderId = ClientOrderId { unClientOrderId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show ClientOrderId where
     show = show . unClientOrderId
@@ -166,6 +173,8 @@ data OrderStatus
     | OrderDone
     | OrderSettled
     deriving (Typeable, Generic)
+
+instance Hashable OrderStatus
 
 instance Show OrderStatus where
     show OrderOpen    = "open"
@@ -192,6 +201,8 @@ data Liquidity
     | LiquidityTaker
     deriving (Typeable, Generic)
 
+instance Hashable Liquidity
+
 instance Show Liquidity where
     show LiquidityMaker = "M"
     show LiquidityTaker = "T"
@@ -207,7 +218,7 @@ instance FromJSON Liquidity where
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid liquidity."
 
 newtype FundingId = FundingId { unFundingId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show FundingId where
     show = show . unFundingId
@@ -217,6 +228,8 @@ data FundingStatus
     | FundingSettled
     | FundingRejected
     deriving (Typeable, Generic)
+
+instance Hashable FundingStatus
 
 instance Show FundingStatus where
     show FundingOutstanding = "outstanding"
@@ -239,6 +252,8 @@ data MarginType
     | MarginWithdraw
     deriving (Typeable, Generic)
 
+instance Hashable MarginType
+
 instance Show MarginType where
     show MarginDeposit  = "deposit"
     show MarginWithdraw = "withdraw"
@@ -254,7 +269,7 @@ instance FromJSON MarginType where
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin type."
 
 newtype MarginTransferId = MarginTransferId { unMarginTransferId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show MarginTransferId where
     show = show . unMarginTransferId
@@ -262,6 +277,8 @@ instance Show MarginTransferId where
 data MarginStatus
     = MarginCompleted
     deriving (Typeable, Generic)
+
+instance Hashable MarginStatus
 
 instance Show MarginStatus where
     show MarginCompleted  = "completed"
@@ -281,6 +298,8 @@ data PositionStatus
     | PositionLocked
     | PositionDefault
     deriving (Typeable, Generic)
+
+instance Hashable PositionStatus
 
 instance Show PositionStatus where
     show PositionActive  = "active"
@@ -305,6 +324,8 @@ data PositionType
     | PositionShort
     deriving (Typeable, Generic)
 
+instance Hashable PositionType
+
 instance Show PositionType where
     show PositionLong  = "long"
     show PositionShort = "short"
@@ -320,19 +341,19 @@ instance FromJSON PositionType where
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."
 
 newtype PaymentMethodId = PaymentMethodId { unPaymentMethodId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show PaymentMethodId where
     show = show . unPaymentMethodId
 
 newtype DepositId = DepositId { unDepositId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show DepositId where
     show = show . unDepositId
 
 newtype WithdrawId = WithdrawId { unWithdrawId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show WithdrawId where
     show = show . unWithdrawId
@@ -342,6 +363,8 @@ data PaymentMethodType
     | MethodBankWire
     | MethodACHBankAccount
     deriving (Eq, Ord, Typeable, Generic)
+
+instance Hashable PaymentMethodType
 
 instance Show PaymentMethodType where
     show MethodFiatAccount    = "fiat_account"
@@ -364,6 +387,8 @@ data CoinbaseAccountType
     | CBTypeFiat
     deriving (Typeable, Generic)
 
+instance Hashable CoinbaseAccountType
+
 instance Show CoinbaseAccountType where
     show CBTypeWallet = "wallet"
     show CBTypeFiat   = "fiat"
@@ -379,7 +404,7 @@ instance FromJSON CoinbaseAccountType where
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid coinbase account type."
 
 newtype ReportId = ReportId { unReportId :: UUID }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, Hashable)
 
 instance Show ReportId where
     show = show . unReportId
@@ -388,6 +413,8 @@ data ReportType
     = ReportFills
     | ReportAccount
     deriving (Typeable, Generic)
+
+instance Hashable ReportType
 
 instance Show ReportType where
     show ReportFills   = "fills"
@@ -408,6 +435,8 @@ data ReportStatus
     | ReportCreating
     | ReportReady
     deriving (Typeable, Generic)
+
+instance Hashable ReportStatus
 
 instance Show ReportStatus where
     show ReportPending  = "pending"
