@@ -24,7 +24,7 @@ instance Show AccountId where
     show = show . unAccountId
 
 newtype UserId = UserId { unUserId :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show UserId where
     show = show . unUserId
@@ -60,7 +60,7 @@ instance FromJSON OrderType where
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid order type."
 
 newtype StopType = StopType { unStopType :: Text }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show StopType where
     show = show . unStopType
