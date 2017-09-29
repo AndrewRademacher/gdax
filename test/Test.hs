@@ -23,7 +23,7 @@ main = do
     defaultMain $ tests (Env sbox live)
 
 tests :: Env -> TestTree
-tests e = testGroup "Tests"
+tests e = testGroup "tests"
     [ MarketData.tests e
     , Private.tests e
     , Feed.tests e

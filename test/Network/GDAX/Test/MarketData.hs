@@ -34,16 +34,16 @@ instance HasGdax LocalEnv where gdax = localGdax
 --------------------------------
 
 tests :: Env -> TestTree
-tests e = testGroup "MarketData Parse"
-    [ case_parse l "getProducts"            $ getProducts
-    , case_parse l "getProductTopOfBook"    $ getProductTopOfBook     defProduct
-    , case_parse l "getProductTop50OfBook"  $ getProductTop50OfBook   defProduct
-    , case_parse l "getProductOrderBook"    $ getProductOrderBook     defProduct
-    , case_parse l "getProductTicker"       $ getProductTicker        defProduct
-    , case_parse l "getProductTrades"       $ getProductTrades        defProduct
-    , case_parse l "getProductHistory"      $ getProductHistory       defProduct defStart defEnd (Just 3600)
-    , case_parse l "getCurrencies"          $ getCurrencies
-    , case_parse l "getExchangeTime"        $ getTime
+tests e = testGroup "market_data"
+    [ case_parse l "get_products"               $ getProducts
+    , case_parse l "get_product_top_of_book"    $ getProductTopOfBook     defProduct
+    , case_parse l "get_product_top_50_of_book" $ getProductTop50OfBook   defProduct
+    , case_parse l "get_product_order_book"     $ getProductOrderBook     defProduct
+    , case_parse l "get_product_ticker"         $ getProductTicker        defProduct
+    , case_parse l "get_product_trades"         $ getProductTrades        defProduct
+    , case_parse l "get_product_history"        $ getProductHistory       defProduct defStart defEnd (Just 3600)
+    , case_parse l "get_currencies"             $ getCurrencies
+    , case_parse l "get_exchange_time"          $ getTime
     ]
     where
         l = e ^. liveUnsigned

@@ -26,7 +26,7 @@ import           Test.Tasty.HUnit
 import           Wuss
 
 tests :: Env -> TestTree
-tests e = testGroup "Feed Parse"
+tests e = testGroup "feed"
     [ parseTestClient e (mkBTCSub [ChannelHeartbeat]) "heartbeat" (Proxy :: Proxy Heartbeat)
     , parseTestClient e (mkBTCSub [ChannelTicker]) "ticker" (Proxy :: Proxy Ticker)
     , parseTestClient e (mkBTCSub [ChannelLevel2]) "snapshot" (Proxy :: Proxy Level2Snapshot)

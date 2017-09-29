@@ -14,7 +14,7 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 
 tests :: Env -> TestTree
-tests e = testGroup "Private"
+tests e = testGroup "private"
     [ case_viewAccounts e
     , case_listPaymentMethods e
     , case_listCoinbaseAccounts e
@@ -22,7 +22,7 @@ tests e = testGroup "Private"
     ]
 
 case_viewAccounts :: Env -> TestTree
-case_viewAccounts e = testCaseSteps "ViewAccount" $ \step -> do
+case_viewAccounts e = testCaseSteps "view_account" $ \step -> do
     step "listAccounts"
     accounts <- listAccounts (e ^. sandbox)
 
@@ -35,15 +35,17 @@ case_viewAccounts e = testCaseSteps "ViewAccount" $ \step -> do
     return ()
 
 case_listPaymentMethods :: Env -> TestTree
-case_listPaymentMethods e = testCase "listPaymentMethods" $ do
+case_listPaymentMethods e = testCase "list_payment_methods" $ do
     methods <- listPaymentMethods (e ^. sandbox)
     return ()
 
 case_listCoinbaseAccounts :: Env -> TestTree
-case_listCoinbaseAccounts e = testCase "listCoinbaseAccounts" $ do
+case_listCoinbaseAccounts e = testCase "list_coinbase_accounts" $ do
     cbaseAccounts <- listCoinbaseAccounts (e ^. sandbox)
     return ()
 
 case_useCoinbaseAccount :: Env -> TestTree
-case_useCoinbaseAccount e = testCaseSteps "Use Coinbase Account" $ \step -> do
+case_useCoinbaseAccount e = testCaseSteps "use_coinbase_account" $ \step -> do
+    accounts <- listCoinbaseAccounts (e ^. sandbox)
     return ()
+    -- print accounts
