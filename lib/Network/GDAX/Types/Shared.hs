@@ -27,14 +27,13 @@ newtype UserId = UserId { unUserId :: Text }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show UserId where
-    show = show . unUserId
+    show = T.unpack . unUserId
 
 newtype ProfileId = ProfileId { unProfileId :: UUID }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
 
 instance Show ProfileId where
     show = show . unProfileId
-
 
 newtype OrderId = OrderId { unOrderId :: UUID }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
@@ -63,13 +62,13 @@ newtype StopType = StopType { unStopType :: Text }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show StopType where
-    show = show . unStopType
+    show = T.unpack . unStopType
 
 newtype ProductId = ProductId { unProductId :: Text }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show ProductId where
-    show = show . unProductId
+    show = T.unpack . unProductId
 
 newtype Sequence = Sequence { unSequence :: Int64 }
     deriving (Eq, Ord, Enum, Typeable, Generic, ToJSON, FromJSON)
@@ -115,7 +114,7 @@ newtype CurrencyId = CurrencyId { unCurrencyId :: Text }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON, IsString)
 
 instance Show CurrencyId where
-    show = show . unCurrencyId
+    show = T.unpack . unCurrencyId
 
 newtype EntryId = EntryId { unEntryId :: Int64 }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
