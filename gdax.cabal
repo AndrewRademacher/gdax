@@ -93,6 +93,7 @@ test-suite test-gdax
 
     other-modules:      Network.GDAX.Test.Feed
                         Network.GDAX.Test.MarketData
+                        Network.GDAX.Test.Private
                         Network.GDAX.Test.Types
 
     build-depends:      base            >4 && < 6

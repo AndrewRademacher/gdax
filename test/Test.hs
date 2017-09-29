@@ -7,6 +7,7 @@ import qualified Data.ByteString.Char8        as CBS
 import           Network.GDAX.Implicit
 import qualified Network.GDAX.Test.Feed       as Feed
 import qualified Network.GDAX.Test.MarketData as MarketData
+import qualified Network.GDAX.Test.Private    as Private
 import           Network.GDAX.Test.Types
 import           System.Environment
 import           Test.Tasty
@@ -24,5 +25,6 @@ main = do
 tests :: Env -> TestTree
 tests e = testGroup "Tests"
     [ MarketData.tests e
+    , Private.tests e
     , Feed.tests e
     ]
