@@ -5,6 +5,7 @@ module Network.GDAX.Explicit.Private where
 
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class
+import           Data.Aeson                 (Value)
 import           Data.Monoid
 import           Data.Set                   (Set)
 import qualified Data.Set                   as Set
@@ -99,6 +100,9 @@ withdrawCrypto g w = gdaxSignedPost g "/withdraws/crypto" [] w
 
 listPaymentMethods :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector PaymentMethod)
 listPaymentMethods g = gdaxSignedGet g "/payment-methods" []
+
+listPaymentMethods' :: (MonadIO m, MonadThrow m) => Gdax -> m Value
+listPaymentMethods' g = gdaxSignedGet g "/payment-methods" []
 
 listCoinbaseAccounts :: (MonadIO m, MonadThrow m) => Gdax -> m (Vector CoinbaseAccount)
 listCoinbaseAccounts g = gdaxSignedGet g "/coinbase-accounts" []

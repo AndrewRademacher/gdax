@@ -320,7 +320,7 @@ instance FromJSON PositionType where
             "short" -> pure PositionShort
             _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid margin status."
 
-newtype PaymentMethodId = PaymentMethodId { unPaymentMethodId :: Int64 }
+newtype PaymentMethodId = PaymentMethodId { unPaymentMethodId :: UUID }
     deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
 
 instance Show PaymentMethodId where
@@ -338,11 +338,27 @@ newtype WithdrawId = WithdrawId { unWithdrawId :: Int64 }
 instance Show WithdrawId where
     show = show . unWithdrawId
 
-newtype PaymentMethodType = PaymentMethodType { unPaymentMethodType :: Int64 }
-    deriving (Eq, Ord, Typeable, Generic, ToJSON, FromJSON)
+data PaymentMethodType
+    = MethodFiatAccount
+    | MethodBankWire
+    | MethodACHBankAccount
+    deriving (Eq, Ord, Typeable, Generic)
 
 instance Show PaymentMethodType where
-    show = show . unPaymentMethodType
+    show MethodFiatAccount    = "fiat_account"
+    show MethodBankWire       = "bank_wire"
+    show MethodACHBankAccount = "ach_bank_account"
+
+instance ToJSON PaymentMethodType where
+    toJSON = String . T.pack . show
+
+instance FromJSON PaymentMethodType where
+    parseJSON = withText "PaymentMethodType" $ \t ->
+        case t of
+            "fiat_account" -> pure MethodFiatAccount
+            "bank_wire" -> pure MethodBankWire
+            "ach_bank_account" -> pure MethodACHBankAccount
+            _ -> fail $ T.unpack $ "'" <> t <> "' is not a valid payment method type."
 
 data CoinbaseAccountType
     = CBTypeWallet

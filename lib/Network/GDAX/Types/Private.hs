@@ -753,10 +753,10 @@ data Limits
 
 instance FromJSON Limits where
     parseJSON = withObject "Limits" $ \o -> Limits
-        <$> o .: "buy"
-        <*> o .: "instant_buy"
-        <*> o .: "sell"
-        <*> o .: "deposit"
+        <$> (nothingToEmptyVector <$> o .:? "buy")
+        <*> (nothingToEmptyVector <$> o .:? "instant_buy")
+        <*> (nothingToEmptyVector <$> o .:? "sell")
+        <*> (nothingToEmptyVector <$> o .:? "deposit")
 
 data Limit
     = Limit
@@ -781,7 +781,7 @@ data LimitValue
 
 instance FromJSON LimitValue where
     parseJSON = withObject "LimitValue" $ \o -> LimitValue
-        <$> o .: "amount"
+        <$> (o .: "amount" >>= textDouble)
         <*> o .: "currency"
 
 data CoinbaseAccount

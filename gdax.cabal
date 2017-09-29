@@ -101,6 +101,7 @@ test-suite test-gdax
                       , gdax
 
                       , aeson
+                      , aeson-pretty
                       , base64-bytestring
                       , bytestring
                       , containers
