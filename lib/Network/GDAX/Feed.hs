@@ -26,4 +26,4 @@ defaultClient subs handler conn = do
             let asSum = Aeson.eitherDecode res :: Either String GdaxMessage
             case asSum of
                 Left er -> throwM $ MalformedGdaxResponse $ T.pack er
-                Right v -> handler v
+                Right v -> handler v >> loop
