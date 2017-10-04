@@ -1,5 +1,5 @@
 name:               gdax
-version:            0.5.0.1
+version:            0.6.0.0
 synopsis:           API Wrapping for Coinbase's GDAX exchange.
 description:        Please see README.md
 homepage:           https://github.com/AndrewRademacher/gdax
